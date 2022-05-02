@@ -10,7 +10,11 @@ from utils import get_checkpoints_dir
 
 
 def get_fid(cfg):
-    device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
+    if cfg["fid_device"] is None:
+        device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
+    else:
+        device = torch.device(cfg["fid_device"])
+    #device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
 
     if cfg["fid_num_workers"] is None:
         num_avail_cpus = len(os.sched_getaffinity(0))
