@@ -34,7 +34,7 @@ chmod +x download_and_process_data.sh
 
 ```
 cd src
-module load gcc/8.2.0 python_gpu/3.9.9
+module load gcc/8.2.0 python_gpu/3.9.9 eth_proxy
 ```
 
 If you want to keep training using a previous checkpoint use --experiment_time TIMESTAMP_OF_PREVIOUS_TRAIN_JOB
