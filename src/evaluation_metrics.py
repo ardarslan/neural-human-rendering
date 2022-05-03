@@ -6,7 +6,17 @@ from pytorch_fid import fid_score
 import math
 import numpy as np
 import cv2
-from utils import get_checkpoints_dir
+from utils import (
+    get_argument_parser,
+    set_seeds,
+    get_model,
+    get_optimizer,
+    get_checkpoint_saver,
+    restore_last_checkpoint,
+    generate_final_images,
+    get_dataset,
+    get_checkpoints_dir
+)
 
 
 def get_fid(cfg):
@@ -178,3 +188,15 @@ def save_evaluation_scores_of_final_images(cfg):
     with open(evaluation_scores_path, "w") as writer:
         for key, value in scores.items():
             writer.write(f"{key}: {value}\n")
+
+
+if __name__ == "__main__":
+    cfg = get_argument_parser().parse_args().__dict__
+    set_seeds(cfg)
+    assert (
+        cfg["experiment_time"].isdigit()
+        and isinstance(cfg["experiment_time"], str)
+        and len(cfg["experiment_time"]) == 10
+    ), "experiment_time should be a string of length 10."
+
+    save_evaluation_scores_of_final_images(cfg)
