@@ -27,7 +27,7 @@ conda activate virtual_humans
 ```
 cd scripts
 chmod +x download_and_process_data.sh
-./download_and_process_data.sh "--DATASETS_DIR=/path/to/data/directory"
+./download_and_process_data.sh "--DATASETS_DIR=/path/to/data/directory" "--USE_CANNY_EDGES=True"
 ```
 
 ## Run experiments

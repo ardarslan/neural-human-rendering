@@ -1,6 +1,9 @@
 import warnings
 import numpy as np
 import dlib
+import cv2
+from skimage import feature
+from PIL import Image
 
 print("Dlib using CUDA?: ", dlib.DLIB_USE_CUDA)
 import torch
@@ -113,11 +116,14 @@ def linear(x, a, b):
     return a * x + b
 
 
-def connect_face_keypoints(keypoints, img_size):
+def connect_face_keypoints(
+    keypoints, img_size, cropped_and_resized_img, use_canny_edges
+):
     r"""Connect the face keypoints to edges and draw the sketch.
     Args:
         img_size (int tuple): Height and width of the input image.
         keypoints (NxKx2 numpy array): Facial landmarks (with K keypoints).
+        img (HxWx3 numpy array): Original image.
     Returns:
         (HxWxC numpy array): Drawn label map.
     """
@@ -167,6 +173,29 @@ def connect_face_keypoints(keypoints, img_size):
                 draw_edge(im_edges, curve_x, curve_y, bw=bw)
 
     im_edges = im_edges.astype(np.float32)[:, :, 0]
+
+    if str(use_canny_edges).lower() == "true":  # "TRUE", "True", "true", True
+        label_list = [1, 2, 2, 3, 4, 4, 5, 6]
+        part_labels = np.zeros(img_size, np.uint8)
+        for p, edge_list in enumerate(part_list):
+            indices = [item for sublist in edge_list for item in sublist]
+            pts = keypoints[indices, :].astype(np.int32)
+            cv2.fillPoly(part_labels, pts=[pts], color=label_list[p])
+
+        canny_edges = feature.canny(
+            np.array(Image.fromarray(cropped_and_resized_img).convert("L"))
+        )
+        canny_edges = canny_edges * (part_labels == 0)
+
+        # black borders
+        canny_edges[:, [0, 1, -2, -1]] = canny_edges[[0, 1, -2, -1]] = 0
+
+        im_edges += (canny_edges * 255).astype(np.uint8)
+    elif str(use_canny_edges).lower() == "false":  # "FALSE", "False", "false", False
+        pass
+    else:
+        raise Exception(f"Not a valid use_canny_edges {use_canny_edges}")
+
     return im_edges
 
 
@@ -249,7 +278,7 @@ def crop_and_resize(img, coords, size=None, method="bilinear"):
     return cropped_and_resized_image
 
 
-def extract_face_edge_map_from_single_image(img, target_h_w):
+def extract_face_edge_map_from_single_image(img, target_h_w, use_canny_edges):
     """Crops, resizes the input image and extracts black and white
         face edge map from a 2D RGB face image.
     Args:
@@ -263,5 +292,7 @@ def extract_face_edge_map_from_single_image(img, target_h_w):
         img, crop_coords, (target_h_w, target_h_w)
     )
     keypoints = get_dlib_keypoints_from_image(cropped_and_resized_img)
-    face_edge_map = connect_face_keypoints(keypoints, (target_h_w, target_h_w))
+    face_edge_map = connect_face_keypoints(
+        keypoints, (target_h_w, target_h_w), cropped_and_resized_img, use_canny_edges
+    )
     return cropped_and_resized_img, face_edge_map
