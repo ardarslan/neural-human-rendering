@@ -7,7 +7,9 @@ from face_data_utils import extract_face_edge_map_from_single_image
 save_frame_idx = 0
 
 
-def extract_inputs_and_outputs_for_one_video(video_path, target_h_w, skip_frame):
+def extract_inputs_and_outputs_for_one_video(
+    video_path, target_h_w, skip_frame, use_canny_edges
+):
     global save_frame_idx
     videos_dir = str(Path(video_path).parent.parent)
 
@@ -35,7 +37,9 @@ def extract_inputs_and_outputs_for_one_video(video_path, target_h_w, skip_frame)
             (
                 cropped_and_resized_image,
                 face_edge_map,
-            ) = extract_face_edge_map_from_single_image(image, target_h_w)
+            ) = extract_face_edge_map_from_single_image(
+                image, target_h_w, use_canny_edges
+            )
         except Exception as e:
             print(e)
             read_frame_idx += 1
@@ -57,7 +61,9 @@ def extract_inputs_and_outputs_for_one_video(video_path, target_h_w, skip_frame)
         save_frame_idx += 1
 
 
-def extract_frames_and_edges_for_all_videos(videos_dir, target_h_w, skip_frame, split):
+def extract_frames_and_edges_for_all_videos(
+    videos_dir, target_h_w, skip_frame, split, use_canny_edges
+):
     current_videos_dir = os.path.join(videos_dir, split, "original")
     video_paths = [
         os.path.join(videos_dir, split, "original", video_name)
@@ -66,17 +72,31 @@ def extract_frames_and_edges_for_all_videos(videos_dir, target_h_w, skip_frame, 
     ]
 
     for video_path in video_paths:
-        extract_inputs_and_outputs_for_one_video(video_path, target_h_w, skip_frame)
+        extract_inputs_and_outputs_for_one_video(
+            video_path, target_h_w, skip_frame, use_canny_edges
+        )
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Arguments for preprocessing script")
 
     parser.add_argument(
-        "--videos_dir", type=str, help="Directory where the videos are located."
+        "--videos_dir",
+        type=str,
+        help="Directory where the videos are located.",
+        required=True,
     )
     parser.add_argument(
-        "--split", type=str, help="Split should be 'train', 'test' or 'validation'."
+        "--use_canny_edges",
+        type=str,
+        required=True,
+        help="Whether to use canny edges or not.",
+    )
+    parser.add_argument(
+        "--split",
+        type=str,
+        help="Split should be 'train', 'test' or 'validation'.",
+        required=True,
     )
     parser.add_argument(
         "--target_h_w",
@@ -94,5 +114,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     extract_frames_and_edges_for_all_videos(
-        args.videos_dir, args.target_h_w, args.skip_frame, args.split
+        args.videos_dir,
+        args.target_h_w,
+        args.skip_frame,
+        args.split,
+        args.use_canny_edges,
     )
