@@ -113,9 +113,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    print(args.use_canny_edges)
-    print(type(args.use_canny_edges))
-
     extract_frames_and_edges_for_all_videos(
         args.videos_dir,
         args.target_h_w,
