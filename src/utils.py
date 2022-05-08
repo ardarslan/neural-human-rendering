@@ -6,7 +6,7 @@ import pprint
 import argparse
 import numpy as np
 import tensorflow as tf
-from models import Generator, CNNDiscriminator
+from models import Generator, CNNDiscriminator, CLIPDiscriminator
 from vit import create_vit_classifier
 
 
@@ -35,7 +35,7 @@ def get_argument_parser():
     parser.add_argument(
         "--discriminator_type",
         type=str,
-        choices=["cnn", "vit", "mlp-mixer"],
+        choices=["cnn", "vit", "mlp-mixer", "clip"],
         default="cnn",
         # required=True, # fix
     )
@@ -52,8 +52,8 @@ def get_argument_parser():
         default=10,
         help="Weight of l1 loss in generator loss.",
     )
-    parser.add_argument("--generator_lr", type=float, default=0.002)
-    parser.add_argument("--discriminator_lr", type=float, default=0.003)
+    parser.add_argument("--generator_lr", type=float, default=2e-3)
+    parser.add_argument("--discriminator_lr", type=float, default=3e-3)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--buffer_size", type=int, default=1000)
     parser.add_argument("--batch_size", type=int, default=32)
@@ -70,6 +70,10 @@ def get_argument_parser():
     parser.add_argument("--num_heads", type=int, default=4, help="")
     parser.add_argument("--num_transformer_layers", type=int, default=8, help="")
     parser.add_argument("--num_classes", type=int, default=2, help="")
+
+    # CLIP
+    parser.add_argument("--clip_fine_tune", action="store_true")
+    parser.add_argument("--clip_output_type", default="cls", help="")
 
     # FID
     parser.add_argument("--fid_dims", type=int, default=2048, help="")
@@ -147,6 +151,8 @@ def get_model(cfg, model_type):
             return CNNDiscriminator(cfg)
         elif cfg["discriminator_type"] == "vit":
             return create_vit_classifier(cfg)
+        elif cfg["discriminator_type"] == "clip":
+            raise CLIPDiscriminator(cfg)
         elif cfg["discriminator_type"] == "mlp-mixer":
             raise NotImplementedError()
         else:

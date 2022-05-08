@@ -1,7 +1,6 @@
 import os
 import lpips
 import torch
-import lpips
 import pytorch_fid
 import math
 import numpy as np

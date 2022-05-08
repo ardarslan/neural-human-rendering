@@ -18,6 +18,7 @@ dependencies:
   - ipython=8.2.0
   - torchvision=0.2.1
   - scipy=1.5.3
+  - transformers=4.16.2
   - pip:
     - opencv-python==4.5.5.64
     - tensorflow-gpu==2.8.0
