@@ -28,7 +28,7 @@ def get_argument_parser():
         "--dataset_type",
         type=str,
         required=True,  # fix
-        default="body_smplpix",  # fix
+        # default="face",  # fix
         help='Dataset type should be "face" or "body_smplpix".',
         choices=["face", "body_smplpix"],
     )
@@ -36,8 +36,8 @@ def get_argument_parser():
         "--discriminator_type",
         type=str,
         choices=["cnn", "vit", "mlp-mixer", "clip"],
-        default="cnn",
-        # required=True, # fix
+        # default="clip",
+        required=True,  # fix
     )
     parser.add_argument(
         "--experiment_time",
@@ -61,6 +61,8 @@ def get_argument_parser():
         "--save_checkpoint_every_iter", type=int, default=5000  # fix
     )  # should be consistent if model will be loaded from a previous checkpoint
     parser.add_argument("--num_iterations", type=int, default=200000)
+    parser.add_argument("--image_height", type=int, default=224)
+    parser.add_argument("--image_width", type=int, default=224)
 
     # VIT
     parser.add_argument("--patch_size", type=int, default=6, help="")

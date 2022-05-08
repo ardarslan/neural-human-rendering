@@ -18,13 +18,13 @@ if __name__ == "__main__":
         "--target_h",
         type=int,
         help="Target height of body images.",
-        default=256,
+        default=224,
     )
     parser.add_argument(
         "--target_w",
         type=int,
         help="Target width of body images.",
-        default=128,
+        default=112,
     )
 
     args = parser.parse_args()

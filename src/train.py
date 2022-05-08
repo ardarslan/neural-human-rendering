@@ -139,13 +139,9 @@ if __name__ == "__main__":
     if cfg["dataset_type"] == "face":
         cfg["num_in_channels"] = 1
         cfg["num_out_channels"] = 3
-        cfg["image_height"] = 256
-        cfg["image_width"] = 256
     elif cfg["dataset_type"] == "body_smplpix":
         cfg["num_in_channels"] = 3
         cfg["num_out_channels"] = 3
-        cfg["image_height"] = 256
-        cfg["image_width"] = 256
     else:
         raise Exception(f"Not a valid dataset_type {dataset_type}.")
 

@@ -146,10 +146,13 @@ def CNNDiscriminator(cfg):
 
 def CLIPDiscriminator(cfg):
     model = TFCLIPVisionModel.from_pretrained("openai/clip-vit-base-patch32")
-    model.trainable = cfg["clip_fine_tune"]  # don't fine-tune the encoder.
+    model.trainable = cfg[
+        "clip_fine_tune"
+    ]  # TODO: Make only the last layer trainable when cfg["clip_fine_tine"] is True.
     processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
 
     inputs = tf.keras.layers.Input(shape=(cfg["image_height"], cfg["image_width"], 3))
+    
     outputs = processor(images=inputs, return_tensors="tf")
     outputs = model(**outputs)
     # last_hidden_state = outputs.last_hidden_state  # shape: (cfg["batch_size"], N_patches, 768)
@@ -159,8 +162,11 @@ def CLIPDiscriminator(cfg):
         outputs = tf.reduce_mean(
             outputs.last_hidden_state, axis=1
         )  # averaged last hidden states, shape: (cfg["batch_size"], 768)
-    outputs = tf.keras.layers.Dense(256, activation="relu")(outputs)
-    outputs = tf.keras.layers.Dropout(0.25)(outputs)
+    outputs = tf.keras.layers.BatchNormalization(outputs)
+    outputs = tf.keras.layers.Dense(256, activation="leaky_relu")(outputs)
+    outputs = tf.keras.layers.BatchNormalization(outputs)
+    outputs = tf.keras.layers.Dense(256, activation="leaky_relu")(outputs) + outputs
+    outputs = tf.keras.layers.BatchNormalization(outputs)
     outputs = tf.keras.layers.Dense(1, activation="linear")(outputs)
 
     return tf.keras.Model(inputs=inputs, outputs=outputs)
