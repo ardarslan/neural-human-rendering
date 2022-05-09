@@ -102,7 +102,7 @@ if __name__ == "__main__":
         "--target_h_w",
         type=int,
         help="Target width and height of face edge map.",
-        default=224,
+        default=256,
     )
     parser.add_argument(
         "--skip_frame",

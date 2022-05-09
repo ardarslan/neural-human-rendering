@@ -3,11 +3,12 @@ import numpy as np
 import tensorflow as tf
 from keras import layers
 from tensorflow import keras
-# import tensorflow_addons as tfa
 import matplotlib.pyplot as plt
+
 """
 code adapted from https://keras.io/examples/vision/vit_small_ds/
 """
+
 
 class ShiftedPatchTokenization(layers.Layer):
     def __init__(
@@ -16,13 +17,15 @@ class ShiftedPatchTokenization(layers.Layer):
         **kwargs,
     ):
         super().__init__(**kwargs)
-        self.vanilla = cfg['vanilla']  # Flag to swtich to vanilla patch extractor
+        self.vanilla = cfg["vanilla"]  # Flag to swtich to vanilla patch extractor
         self.image_size = cfg["image_height"]
-        self.patch_size = cfg['patch_size']
-        self.half_patch = cfg['patch_size'] // 2
-        self.flatten_patches = layers.Reshape(((cfg['image_height'] // cfg['patch_size']) ** 2, -1))
-        self.projection = layers.Dense(units=cfg['projection_dim'])
-        self.layer_norm = layers.LayerNormalization(epsilon=cfg['norm_eps'])
+        self.patch_size = cfg["patch_size"]
+        self.half_patch = cfg["patch_size"] // 2
+        self.flatten_patches = layers.Reshape(
+            ((cfg["image_height"] // cfg["patch_size"]) ** 2, -1)
+        )
+        self.projection = layers.Dense(units=cfg["projection_dim"])
+        self.layer_norm = layers.LayerNormalization(epsilon=cfg["norm_eps"])
 
     def crop_shift_pad(self, images, mode):
         # Build the diagonally shifted images
@@ -101,7 +104,7 @@ def show_sample(image, cfg):
     # and resize the image
 
     resized_image = tf.image.resize(
-        tf.convert_to_tensor([image]), size=(cfg['image_height'], cfg['image_height'])
+        tf.convert_to_tensor([image]), size=(cfg["image_height"], cfg["image_height"])
     )
 
     # Vanilla patch maker: This takes an image and divides into
@@ -115,7 +118,9 @@ def show_sample(image, cfg):
         for col in range(n):
             plt.subplot(n, n, count)
             count = count + 1
-            image = tf.reshape(patch[row][col], (cfg['patch_size'], cfg['patch_size'], 3))
+            image = tf.reshape(
+                patch[row][col], (cfg["patch_size"], cfg["patch_size"], 3)
+            )
             plt.imshow(image)
             plt.axis("off")
     plt.show()
@@ -134,20 +139,21 @@ def show_sample(image, cfg):
             for col in range(n):
                 plt.subplot(n, n, count)
                 count = count + 1
-                image = tf.reshape(patch[row][col], (cfg['patch_size'], cfg['patch_size'], 5 * 3))
-                plt.imshow(image[..., 3 * index: 3 * index + 3])
+                image = tf.reshape(
+                    patch[row][col], (cfg["patch_size"], cfg["patch_size"], 5 * 3)
+                )
+                plt.imshow(image[..., 3 * index : 3 * index + 3])
                 plt.axis("off")
         plt.show()
 
 
 class PatchEncoder(layers.Layer):
-    def __init__(
-        self, cfg, **kwargs
-    ):
+    def __init__(self, cfg, **kwargs):
         super().__init__(**kwargs)
-        self.num_patches = (cfg['image_height'] // cfg['patch_size']) ** 2
+        self.num_patches = (cfg["image_height"] // cfg["patch_size"]) ** 2
         self.position_embedding = layers.Embedding(
-            input_dim=(cfg['image_height'] // cfg['patch_size']) ** 2, output_dim=cfg['projection_dim']
+            input_dim=(cfg["image_height"] // cfg["patch_size"]) ** 2,
+            output_dim=cfg["projection_dim"],
         )
         self.positions = tf.range(start=0, limit=self.num_patches, delta=1)
 
@@ -184,9 +190,15 @@ def mlp(x, hidden_units, dropout_rate):
     return x
 
 
-def create_vit_classifier(cfg):
-    inputs = layers.Input(shape=(cfg["image_height"], cfg["image_width"], cfg["num_in_channels"]), name="input_image")
-    targets = layers.Input(shape=(cfg["image_height"], cfg["image_width"], cfg["num_out_channels"]), name="target_image")
+def VITDiscriminator(cfg):
+    inputs = layers.Input(
+        shape=(cfg["image_height"], cfg["image_width"], cfg["num_in_channels"]),
+        name="input_image",
+    )
+    targets = layers.Input(
+        shape=(cfg["image_height"], cfg["image_width"], cfg["num_out_channels"]),
+        name="target_image",
+    )
 
     data = layers.concatenate([inputs, targets])
     # Augment data.
@@ -197,28 +209,28 @@ def create_vit_classifier(cfg):
     # Encode patches.
     encoded_patches = PatchEncoder(cfg)(tokens)
 
-    diag_attn_mask = 1 - tf.eye((cfg['image_height'] // cfg['patch_size']) ** 2)
+    diag_attn_mask = 1 - tf.eye((cfg["image_height"] // cfg["patch_size"]) ** 2)
     diag_attn_mask = tf.cast([diag_attn_mask], dtype=tf.int8)
 
     # Create multiple layers of the Transformer block.
-    for _ in range(cfg['num_transformer_layers']):
+    for _ in range(cfg["num_transformer_layers"]):
         # Layer normalization 1.
         x1 = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
         # Create a multi-head attention layer.
-        if not cfg['vanilla']:
+        if not cfg["vanilla"]:
             attention_output = MultiHeadAttentionLSA(
-                num_heads=cfg['num_heads'], key_dim=cfg['projection_dim'], dropout=0.1
+                num_heads=cfg["num_heads"], key_dim=cfg["projection_dim"], dropout=0.1
             )(x1, x1, attention_mask=diag_attn_mask)
         else:
             attention_output = layers.MultiHeadAttention(
-                num_heads=cfg['num_heads'], key_dim=cfg['projection_dim'], dropout=0.1
+                num_heads=cfg["num_heads"], key_dim=cfg["projection_dim"], dropout=0.1
             )(x1, x1)
         # Skip connection 1.
         x2 = layers.Add()([attention_output, encoded_patches])
         # Layer normalization 2.
         x3 = layers.LayerNormalization(epsilon=1e-6)(x2)
         # MLP.
-        x3 = mlp(x3, hidden_units=cfg['transformer_units'], dropout_rate=0.1)
+        x3 = mlp(x3, hidden_units=cfg["transformer_units"], dropout_rate=0.1)
         # Skip connection 2.
         encoded_patches = layers.Add()([x3, x2])
 
@@ -227,9 +239,9 @@ def create_vit_classifier(cfg):
     representation = layers.Flatten()(representation)
     representation = layers.Dropout(0.5)(representation)
     # Add MLP.
-    features = mlp(representation, hidden_units=cfg['mlp_head_units'], dropout_rate=0.5)
+    features = mlp(representation, hidden_units=cfg["mlp_head_units"], dropout_rate=0.5)
     # Classify outputs.
-    logits = layers.Dense(cfg['num_classes'])(features)
+    logits = layers.Dense(cfg["num_classes"])(features)
     # Create the Keras model.
     model = keras.Model(inputs=[inputs, targets], outputs=logits)
     return model

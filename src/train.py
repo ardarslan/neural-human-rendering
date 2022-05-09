@@ -105,7 +105,6 @@ def train(
         1,
     ):
         if (iteration) % 1000 == 0:
-
             generate_intermediate_images(
                 cfg, generator, example_input, example_target, iteration
             )
