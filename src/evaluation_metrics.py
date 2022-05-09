@@ -1,15 +1,19 @@
 import os
 import lpips
 import torch
-import pytorch_fid
+from pytorch_fid import fid_score
 import math
 import numpy as np
 import cv2
-from utils import get_checkpoints_dir
+from utils import get_argument_parser, set_seeds, get_checkpoints_dir
 
 
 def get_fid(cfg):
-    device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
+    if cfg["fid_device"] is None:
+        device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
+    else:
+        device = torch.device(cfg["fid_device"])
+    # device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
 
     if cfg["fid_num_workers"] is None:
         num_avail_cpus = len(os.sched_getaffinity(0))
@@ -27,7 +31,7 @@ def get_fid(cfg):
 
     paths = [gt_dataset_path, gen_dataset_path]
 
-    fid_value = pytorch_fid.calculate_fid_given_paths(
+    fid_value = fid_score.calculate_fid_given_paths(
         paths, cfg["fid_batch_size"], device, cfg["fid_dims"], num_workers
     )
     return fid_value
@@ -173,3 +177,15 @@ def save_evaluation_scores_of_final_images(cfg):
     with open(evaluation_scores_path, "w") as writer:
         for key, value in scores.items():
             writer.write(f"{key}: {value}\n")
+
+
+if __name__ == "__main__":
+    cfg = get_argument_parser().parse_args().__dict__
+    set_seeds(cfg)
+    assert (
+        cfg["experiment_time"].isdigit()
+        and isinstance(cfg["experiment_time"], str)
+        and len(cfg["experiment_time"]) == 10
+    ), "experiment_time should be a string of length 10."
+
+    save_evaluation_scores_of_final_images(cfg)

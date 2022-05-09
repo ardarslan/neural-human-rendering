@@ -84,6 +84,7 @@ def get_argument_parser():
     parser.add_argument("--fid_dims", type=int, default=2048, help="")
     parser.add_argument("--fid_num_workers", type=int, default=None, help="")
     parser.add_argument("--fid_batch_size", type=int, default=64, help="")
+    parser.add_argument("--fid_device", type=str, default=None, help="")
 
     return parser
 
