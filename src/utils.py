@@ -17,20 +17,20 @@ def get_argument_parser():
     parser.add_argument(
         "--datasets_dir",
         type=str,
-        # required=True,  # fix
-        default="/cluster/scratch/aarslan/virtual_humans_data",  # fix
+        required=True,  # fix
+        # default="/cluster/scratch/aarslan/virtual_humans_data",  # fix
     )
     parser.add_argument(
         "--checkpoints_dir",
         type=str,
-        # required=True,  # fix
-        default="/cluster/scratch/aarslan/virtual_humans_checkpoints",  # fix
+        required=True,  # fix
+        # default="/cluster/scratch/aarslan/virtual_humans_checkpoints",  # fix
     )
     parser.add_argument(
         "--dataset_type",
         type=str,
-        # required=True,  # fix
-        default="face",  # fix
+        required=True,  # fix
+        # default="face",  # fix
         help='Dataset type should be "face" or "body_smplpix".',
         choices=["face", "body_smplpix"],
     )
@@ -39,8 +39,8 @@ def get_argument_parser():
         "--discriminator_type",
         type=str,
         choices=["cnn", "vit", "mlp-mixer", "clip"],
-        default="clip",  # fix
-        # required=True,  # fix
+        # default="vit",  # fix
+        required=True,  # fix
     )
     parser.add_argument(
         "--experiment_time",
