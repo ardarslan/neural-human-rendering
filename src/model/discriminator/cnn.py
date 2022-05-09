@@ -1,20 +1,30 @@
 import tensorflow as tf
-from model.model_utils import upsample, downsample
+from model.model_utils import upsample, downsample, pad
 
 
 def CNNDiscriminator(cfg):
     initializer = tf.random_normal_initializer(0.0, 0.02)
 
     inp = tf.keras.layers.Input(
-        shape=[cfg["image_height"], cfg["image_width"], cfg["num_in_channels"]],
+        shape=[
+            cfg["cropped_image_height"],
+            cfg["cropped_image_width"],
+            cfg["num_in_channels"],
+        ],
         name="input_image",
     )
     tar = tf.keras.layers.Input(
-        shape=[cfg["image_height"], cfg["image_width"], cfg["num_out_channels"]],
+        shape=[
+            cfg["cropped_image_height"],
+            cfg["cropped_image_width"],
+            cfg["num_out_channels"],
+        ],
         name="target_image",
     )
 
-    x = tf.keras.layers.concatenate([inp, tar])  # (batch_size, 256, 256, channels*2)
+    x = tf.keras.layers.concatenate(
+        [pad(cfg, inp), pad(cfg, tar)]
+    )  # (batch_size, 256, 256, channels*2)
 
     down1 = downsample(64, 4, False)(x)  # (batch_size, 128, 128, 64)
     down2 = downsample(128, 4)(down1)  # (batch_size, 64, 64, 128)

@@ -47,3 +47,47 @@ def upsample(filters, size, apply_dropout=False):
     result.add(tf.keras.layers.ReLU())
 
     return result
+
+
+def center_crop(cfg, images):
+    """
+    Input:
+        tf.Tensor
+        Shape: (cfg["full_image_height"], cfg["full_image_width"], num_channels)
+                or
+               (cfg["batch_size"], cfg["full_image_height"], cfg["full_image_width"], num_channels)
+    Output:
+        tf.Tensor
+        Shape: (cfg["cropped_image_height"], cfg["cropped_image_width"], num_channels)
+                or
+               (cfg["batch_size"], cfg["cropped_image_height"], cfg["cropped_image_width"], num_channels)
+    """
+    return tf.image.crop_to_bounding_box(
+        images,
+        offset_height=int((cfg["full_image_height"] - cfg["cropped_image_height"]) / 2),
+        offset_width=int((cfg["full_image_width"] - cfg["cropped_image_width"]) / 2),
+        target_height=cfg["cropped_image_height"],
+        target_width=cfg["cropped_image_width"],
+    )
+
+
+def pad(cfg, images):
+    """
+    Input:
+        tf.Tensor
+        Shape: (cfg["cropped_image_height"], cfg["cropped_image_width"], num_channels)
+                or
+               (cfg["batch_size"], cfg["cropped_image_height"], cfg["cropped_image_width"], num_channels)
+    Output:
+        tf.Tensor
+        Shape: (cfg["full_image_height"], cfg["full_image_width"], num_channels)
+                or
+               (cfg["batch_size"], cfg["full_image_height"], cfg["full_image_width"], num_channels)
+    """
+    return tf.image.pad_to_bounding_box(
+        images,
+        offset_height=int((cfg["full_image_height"] - cfg["cropped_image_height"]) / 2),
+        offset_width=int((cfg["full_image_width"] - cfg["cropped_image_width"]) / 2),
+        target_height=cfg["full_image_height"],
+        target_width=cfg["full_image_width"],
+    )
