@@ -38,7 +38,7 @@ if __name__ == "__main__":
     generator_optimizer = get_optimizer(cfg, optimizer_type="generator")
     discriminator_optimizer = get_optimizer(cfg, optimizer_type="discriminator")
 
-    test_ds = get_dataset(cfg, split="test")
+    test_ds = get_dataset(cfg, split="test", shuffle=False)
 
     checkpoint_saver = get_checkpoint_saver(
         cfg, generator, discriminator, generator_optimizer, discriminator_optimizer
