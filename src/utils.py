@@ -101,19 +101,19 @@ def get_dataset(cfg, split):
     input_images_dir = os.path.join(
         cfg["datasets_dir"], cfg["dataset_type"], split, "input"
     )
-    input_image_paths = sorted(
-        [
-            os.path.join(input_images_dir, input_image_name)
-            for input_image_name in os.listdir(input_images_dir)
-            if input_image_name[-4:] == ".png"
-        ]
+    input_image_paths = random.shuffle(
+        sorted(
+            [
+                os.path.join(input_images_dir, input_image_name)
+                for input_image_name in os.listdir(input_images_dir)
+                if input_image_name[-4:] == ".png"
+            ]
+        )
     )
-    real_image_paths = sorted(
-        [
-            input_image_path.replace("input", "output")
-            for input_image_path in input_image_paths
-        ]
-    )
+    real_image_paths = [
+        input_image_path.replace("input", "output")
+        for input_image_path in input_image_paths
+    ]
 
     ds = tf.data.Dataset.zip(
         (
@@ -132,7 +132,6 @@ def get_dataset(cfg, split):
         ),
         num_parallel_calls=tf.data.AUTOTUNE,
     )
-    ds = ds.shuffle(cfg["buffer_size"])
     ds = ds.batch(cfg["batch_size"])
     return ds
 
