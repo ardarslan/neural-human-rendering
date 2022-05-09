@@ -58,7 +58,6 @@ def get_argument_parser():
     parser.add_argument("--generator_lr", type=float, default=2e-3)
     parser.add_argument("--discriminator_lr", type=float, default=3e-3)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--buffer_size", type=int, default=1000)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument(
         "--save_checkpoint_every_iter", type=int, default=5000  # fix
