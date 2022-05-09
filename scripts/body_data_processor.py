@@ -24,7 +24,7 @@ if __name__ == "__main__":
         "--target_w",
         type=int,
         help="Target width of body images.",
-        default=256,
+        default=128,
     )
 
     args = parser.parse_args()
