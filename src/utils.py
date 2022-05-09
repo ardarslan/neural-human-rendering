@@ -96,7 +96,7 @@ def set_seeds(cfg):
     tf.keras.utils.set_random_seed(seed)
 
 
-def get_dataset(cfg, split):
+def get_dataset(cfg, split, shuffle):
     input_images_dir = os.path.join(
         cfg["datasets_dir"], cfg["dataset_type"], split, "input"
     )
@@ -107,7 +107,8 @@ def get_dataset(cfg, split):
             if input_image_name[-4:] == ".png"
         ]
     )
-    random.shuffle(input_image_paths)
+    if shuffle:
+        random.shuffle(input_image_paths)
     real_image_paths = [
         input_image_path.replace("input", "output")
         for input_image_path in input_image_paths

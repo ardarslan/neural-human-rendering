@@ -175,9 +175,8 @@ if __name__ == "__main__":
     else:
         start_iteration = 0
 
-    train_ds = get_dataset(cfg, split="train")
-    val_ds = get_dataset(cfg, split="validation")
-    test_ds = get_dataset(cfg, split="test")
+    train_ds = get_dataset(cfg, split="train", shuffle=True)
+    val_ds = get_dataset(cfg, split="validation", shuffle=True)
 
     train(
         cfg,
