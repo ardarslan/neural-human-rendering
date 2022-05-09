@@ -16,6 +16,12 @@ Close the current terminal and open a new one.
 conda env create -f environment.yml
 ```
 
+## Load Modules
+
+```
+module load gcc/8.2.0 python_gpu/3.9.9
+```
+
 ## Activate Conda Environment
 
 ```
@@ -34,7 +40,6 @@ chmod +x download_and_process_data.sh
 
 ```
 cd src
-module load gcc/8.2.0 python_gpu/3.9.9 eth_proxy
 ```
 
 If you want to keep training using a previous checkpoint use --experiment_time TIMESTAMP_OF_PREVIOUS_TRAIN_JOB
@@ -42,13 +47,7 @@ If you want to keep training using a previous checkpoint use --experiment_time T
 ### Train Original Pix2Pix on Face dataset
 
 ```
-bsub -n 4 -W 24:00 -R "rusage[mem=16384, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=32768]" python train.py --datasets_dir /path/to/data/directory --dataset_type face --discriminator_type cnn --checkpoints_dir /path/to/checkpoints/directory
-```
-
-### Train Original Pix2Pix on Body dataset
-
-```
-bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python train.py --datasets_dir /path/to/data/directory --dataset_type body_smplpix --discriminator_type cnn --checkpoints_dir /path/to/checkpoints/directory
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python train.py --datasets_dir /path/to/data/directory --dataset_type face --discriminator_type cnn --checkpoints_dir /path/to/checkpoints/directory
 ```
 
 ### Train VIT Pix2Pix on Face dataset
@@ -57,12 +56,11 @@ bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>
 bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python train.py --datasets_dir /path/to/data/directory --dataset_type face --discriminator_type vit --vanilla --projection_dim 32 --num_heads 2 --num_transformer_layers 3 --checkpoints_dir /path/to/checkpoints/directory
 ```
 
-### Train VIT Pix2Pix on Body dataset
+### Train CLIP Pix2Pix on Face dataset
 
 ```
-bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python train.py --datasets_dir /path/to/data/directory --dataset_type body_smplpix --discriminator_type vit --vanilla --projection_dim 32 --num_heads 2 --num_transformer_layers 3 --checkpoints_dir /path/to/checkpoints/directory
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python train.py --datasets_dir /path/to/data/directory --dataset_type face --discriminator_type clip --checkpoints_dir /path/to/checkpoints/directory
 ```
-
 
 
 
@@ -72,22 +70,16 @@ bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>
 bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python test.py --datasets_dir /path/to/data/directory --dataset_type face --discriminator_type cnn --checkpoints_dir /path/to/checkpoints/directory --experiment_time TIMESTAMP_OF_TRAIN_JOB
 ```
 
-### Test Original Pix2Pix on Body dataset
-
-```
-bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python test.py --datasets_dir /path/to/data/directory --dataset_type body_smplpix --discriminator_type cnn --checkpoints_dir /path/to/checkpoints/directory --experiment_time TIMESTAMP_OF_TRAIN_JOB
-```
-
 ### Test VIT Pix2Pix on Face dataset
 
 ```
 bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python test.py --datasets_dir /path/to/data/directory --dataset_type face --discriminator_type vit --vanilla --projection_dim 32 --num_heads 2 --num_transformer_layers 3 --checkpoints_dir /path/to/checkpoints/directory --experiment_time TIMESTAMP_OF_TRAIN_JOB
 ```
 
-### Test VIT Pix2Pix on Body dataset
+### Test CLIP Pix2Pix on Face dataset
 
 ```
-bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python test.py --datasets_dir /path/to/data/directory --dataset_type body_smplpix --discriminator_type vit --vanilla --projection_dim 32 --num_heads 2 --num_transformer_layers 3 --checkpoints_dir /path/to/checkpoints/directory --experiment_time TIMESTAMP_OF_TRAIN_JOB
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python test.py --datasets_dir /path/to/data/directory --dataset_type face --discriminator_type clip --checkpoints_dir /path/to/checkpoints/directory --experiment_time TIMESTAMP_OF_TRAIN_JOB
 ```
 
 ### Evaluate results on Face dataset (for any model)

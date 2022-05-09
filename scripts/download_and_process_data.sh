@@ -9,14 +9,13 @@
   shift
  done
 
-# mkdir $DATASETS_DIR
-
+mkdir $DATASETS_DIR
 FACE_DIR=$DATASETS_DIR/face
-# mkdir $FACE_DIR
+mkdir $FACE_DIR
 
-# python3 face_data_downloader.py -d compressed -o $DATASETS_DIR --not_altered --not_mask
-# mv $DATASETS_DIR/FaceForensics_compressed/* $FACE_DIR; rm -rf $DATASETS_DIR/FaceForensics_compressed
-# mkdir $FACE_DIR/validation; mkdir $FACE_DIR/validation/original; mv $FACE_DIR/val/original/* $FACE_DIR/validation/original; rm -rf $FACE_DIR/val
+python3 face_data_downloader.py -d compressed -o $DATASETS_DIR --not_altered --not_mask
+mv $DATASETS_DIR/FaceForensics_compressed/* $FACE_DIR; rm -rf $DATASETS_DIR/FaceForensics_compressed
+mkdir $FACE_DIR/validation; mkdir $FACE_DIR/validation/original; mv $FACE_DIR/val/original/* $FACE_DIR/validation/original; rm -rf $FACE_DIR/val
 bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python face_data_processor.py --videos_dir $FACE_DIR --use_canny_edges $USE_CANNY_EDGES --split train
 bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python face_data_processor.py --videos_dir $FACE_DIR --use_canny_edges $USE_CANNY_EDGES --split validation
 bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python face_data_processor.py --videos_dir $FACE_DIR --use_canny_edges $USE_CANNY_EDGES --split test

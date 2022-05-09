@@ -1,24 +1,19 @@
 import os
 import lpips
 import torch
-import lpips
 from pytorch_fid import fid_score
 import math
 import numpy as np
 import cv2
-from utils import (
-    get_argument_parser,
-    set_seeds,
-    get_checkpoints_dir
-)
+from utils import get_argument_parser, set_seeds, get_checkpoints_dir
 
 
 def get_fid(cfg):
     if cfg["fid_device"] is None:
-        device = torch.device('cuda' if (torch.cuda.is_available()) else 'cpu')
+        device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
     else:
         device = torch.device(cfg["fid_device"])
-    #device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
+    # device = torch.device("cuda" if (torch.cuda.is_available()) else "cpu")
 
     if cfg["fid_num_workers"] is None:
         num_avail_cpus = len(os.sched_getaffinity(0))
