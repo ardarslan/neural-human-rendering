@@ -52,17 +52,18 @@ def get_argument_parser():
         "--l1_weight",
         type=int,
         # required=True,
-        default=10,
+        default=100,
         help="Weight of l1 loss in generator loss.",
     )
-    parser.add_argument("--generator_lr", type=float, default=2e-3)
-    parser.add_argument("--discriminator_lr", type=float, default=3e-3)
+    parser.add_argument("--generator_lr", type=float, default=2e-4)
+    parser.add_argument("--discriminator_lr", type=float, default=2e-4)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument(
         "--save_checkpoint_every_iter", type=int, default=5000  # fix
     )  # should be consistent if model will be loaded from a previous checkpoint
     parser.add_argument("--num_iterations", type=int, default=200000)
+    # parser.add_argument("--max_gradient_norm", type=float, default=1.0)
     parser.add_argument("--full_image_height", type=int, default=256)
     parser.add_argument("--full_image_width", type=int, default=256)
     parser.add_argument("--cropped_image_height", type=int, default=224)
@@ -205,8 +206,10 @@ def normalize(image):
 
 @tf.function()
 def random_jitter(input_image, real_image, image_height, image_width):
-    input_image = resize(input_image, int(image_height * 1.15), int(image_width * 1.15))
-    real_image = resize(real_image, int(image_height * 1.15), int(image_width * 1.15))
+    input_image = resize(
+        input_image, int(image_height * 1.117), int(image_width * 1.117)
+    )
+    real_image = resize(real_image, int(image_height * 1.117), int(image_width * 1.117))
 
     input_image, real_image = random_crop(
         input_image, real_image, image_height, image_width
@@ -315,12 +318,14 @@ def get_summary_writer(cfg):
     return summary_writer
 
 
-def generate_intermediate_images(cfg, model, val_inputs, ground_truths, iteration):
-    predictions = model(val_inputs, training=True)
+def generate_intermediate_images(
+    cfg, model, example_inputs, example_targets, iteration
+):
+    predictions = model(example_inputs, training=True)
     # Getting the pixel values in the [0, 255] range to plot.
     file_names = ["input", "ground_truth", "predicted"]
     for i in range(10):
-        current_images = [val_inputs[i], ground_truths[i], predictions[i]]
+        current_images = [example_inputs[i], example_targets[i], predictions[i]]
         current_file_names = [f"{file_name}_{i}.png" for file_name in file_names]
         for current_file_name, current_image in zip(current_file_names, current_images):
             current_image = np.array(current_image)
