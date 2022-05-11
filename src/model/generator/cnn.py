@@ -1,10 +1,14 @@
 import tensorflow as tf
-from model.model_utils import upsample, downsample
+from model.model_utils import upsample, downsample, center_crop
 
 
 def CNNGenerator(cfg):
     inputs = tf.keras.layers.Input(
-        shape=[cfg["image_height"], cfg["image_width"], cfg["num_in_channels"]]
+        shape=[
+            cfg["full_image_height"],
+            cfg["full_image_width"],
+            cfg["num_in_channels"],
+        ]
     )
 
     down_stack = [
@@ -54,5 +58,8 @@ def CNNGenerator(cfg):
         x = tf.keras.layers.Concatenate()([x, skip])
 
     x = last(x)
+
+    # center crop images. Final shape will be batch_sizex224x224x3.
+    x = center_crop(cfg, x)
 
     return tf.keras.Model(inputs=inputs, outputs=x)

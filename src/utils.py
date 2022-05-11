@@ -39,7 +39,7 @@ def get_argument_parser():
         "--discriminator_type",
         type=str,
         choices=["cnn", "vit", "mlp-mixer", "clip"],
-        # default="clip",  # fix
+        # default="vit",  # fix
         required=True,  # fix
     )
     parser.add_argument(
@@ -63,8 +63,10 @@ def get_argument_parser():
         "--save_checkpoint_every_iter", type=int, default=5000  # fix
     )  # should be consistent if model will be loaded from a previous checkpoint
     parser.add_argument("--num_iterations", type=int, default=200000)
-    parser.add_argument("--image_height", type=int, default=256)
-    parser.add_argument("--image_width", type=int, default=256)
+    parser.add_argument("--full_image_height", type=int, default=256)
+    parser.add_argument("--full_image_width", type=int, default=256)
+    parser.add_argument("--cropped_image_height", type=int, default=224)
+    parser.add_argument("--cropped_image_width", type=int, default=224)
 
     # VIT
     parser.add_argument("--patch_size", type=int, default=6, help="")
@@ -125,8 +127,8 @@ def get_dataset(cfg, split, shuffle):
         lambda input_image_path, real_image_path: load_images_helper(
             input_image_path=input_image_path,
             real_image_path=real_image_path,
-            image_height=cfg["image_height"],
-            image_width=cfg["image_width"],
+            image_height=cfg["full_image_height"],
+            image_width=cfg["full_image_width"],
             split=split,
         ),
         num_parallel_calls=tf.data.AUTOTUNE,
@@ -243,8 +245,9 @@ def load_images_helper(
 def generator_loss(cfg, disc_generated_output, gen_output, target):
     loss_object = tf.keras.losses.BinaryCrossentropy(from_logits=True)
     gan_loss = loss_object(tf.ones_like(disc_generated_output), disc_generated_output)
-    # Mean absolute error
-    l1_loss = tf.reduce_mean(tf.abs(target - gen_output))
+
+    # Center crop. Final shape: (batch_size, 224, 224, num_channels)
+    l1_loss = tf.reduce_mean(tf.abs(target - gen_output))  # Mean absolute error
     total_gen_loss = gan_loss + (cfg["l1_weight"] * l1_loss)
     return total_gen_loss, gan_loss, l1_loss
 
@@ -312,23 +315,6 @@ def get_summary_writer(cfg):
     return summary_writer
 
 
-def center_crop(cfg, image):
-    """
-    Input:
-        tf.Tensor
-        Shape: (cfg["image_height"], cfg["image_width"], num_channels)
-    Output:
-        tf.Tensor
-        Shape: (224, 224, num_channels)
-    """
-
-    return image[
-        int(cfg["image_height"] / 2 - 112) : int(cfg["image_height"] / 2 + 112),
-        int(cfg["image_width"] / 2 - 112) : int(cfg["image_width"] / 2 + 112),
-        :,
-    ]
-
-
 def generate_intermediate_images(cfg, model, val_inputs, ground_truths, iteration):
     predictions = model(val_inputs, training=True)
     # Getting the pixel values in the [0, 255] range to plot.
@@ -337,7 +323,7 @@ def generate_intermediate_images(cfg, model, val_inputs, ground_truths, iteratio
         current_images = [val_inputs[i], ground_truths[i], predictions[i]]
         current_file_names = [f"{file_name}_{i}.png" for file_name in file_names]
         for current_file_name, current_image in zip(current_file_names, current_images):
-            current_image = center_crop(cfg, np.array(current_image))
+            current_image = np.array(current_image)
             cv2.imwrite(
                 os.path.join(
                     get_new_directory(
@@ -359,7 +345,7 @@ def generate_final_images(cfg, model, test_ds):
         prediction = model(test_input, training=True)
         # Getting the pixel values in the [0, 255] range to plot.
         for i in range(prediction.shape[0]):
-            current_prediction = center_crop(cfg, np.array(prediction[i]))
+            current_prediction = np.array(prediction[i])
             cv2.imwrite(
                 os.path.join(
                     get_new_directory([get_checkpoints_dir(cfg), "final_images"]),

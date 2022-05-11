@@ -4,6 +4,7 @@ import tensorflow as tf
 from keras import layers
 from tensorflow import keras
 import matplotlib.pyplot as plt
+from model.model_utils import pad
 
 """
 code adapted from https://keras.io/examples/vision/vit_small_ds/
@@ -18,11 +19,11 @@ class ShiftedPatchTokenization(layers.Layer):
     ):
         super().__init__(**kwargs)
         self.vanilla = cfg["vanilla"]  # Flag to swtich to vanilla patch extractor
-        self.image_size = cfg["image_height"]
+        self.image_size = cfg["full_image_height"]
         self.patch_size = cfg["patch_size"]
         self.half_patch = cfg["patch_size"] // 2
         self.flatten_patches = layers.Reshape(
-            ((cfg["image_height"] // cfg["patch_size"]) ** 2, -1)
+            ((cfg["full_image_height"] // cfg["patch_size"]) ** 2, -1)
         )
         self.projection = layers.Dense(units=cfg["projection_dim"])
         self.layer_norm = layers.LayerNormalization(epsilon=cfg["norm_eps"])
@@ -104,7 +105,8 @@ def show_sample(image, cfg):
     # and resize the image
 
     resized_image = tf.image.resize(
-        tf.convert_to_tensor([image]), size=(cfg["image_height"], cfg["image_height"])
+        tf.convert_to_tensor([image]),
+        size=(cfg["full_image_height"], cfg["full_image_height"]),
     )
 
     # Vanilla patch maker: This takes an image and divides into
@@ -150,9 +152,9 @@ def show_sample(image, cfg):
 class PatchEncoder(layers.Layer):
     def __init__(self, cfg, **kwargs):
         super().__init__(**kwargs)
-        self.num_patches = (cfg["image_height"] // cfg["patch_size"]) ** 2
+        self.num_patches = (cfg["full_image_height"] // cfg["patch_size"]) ** 2
         self.position_embedding = layers.Embedding(
-            input_dim=(cfg["image_height"] // cfg["patch_size"]) ** 2,
+            input_dim=(cfg["full_image_height"] // cfg["patch_size"]) ** 2,
             output_dim=cfg["projection_dim"],
         )
         self.positions = tf.range(start=0, limit=self.num_patches, delta=1)
@@ -192,15 +194,23 @@ def mlp(x, hidden_units, dropout_rate):
 
 def VITDiscriminator(cfg):
     inputs = layers.Input(
-        shape=(cfg["image_height"], cfg["image_width"], cfg["num_in_channels"]),
+        shape=(
+            cfg["cropped_image_height"],
+            cfg["cropped_image_width"],
+            cfg["num_in_channels"],
+        ),
         name="input_image",
     )
     targets = layers.Input(
-        shape=(cfg["image_height"], cfg["image_width"], cfg["num_out_channels"]),
+        shape=(
+            cfg["cropped_image_height"],
+            cfg["cropped_image_width"],
+            cfg["num_out_channels"],
+        ),
         name="target_image",
     )
 
-    data = layers.concatenate([inputs, targets])
+    data = layers.concatenate([pad(cfg, inputs), pad(cfg, targets)])
     # Augment data.
     # augmented = data_augmentation(inputs)
     augmented = data
@@ -209,7 +219,7 @@ def VITDiscriminator(cfg):
     # Encode patches.
     encoded_patches = PatchEncoder(cfg)(tokens)
 
-    diag_attn_mask = 1 - tf.eye((cfg["image_height"] // cfg["patch_size"]) ** 2)
+    diag_attn_mask = 1 - tf.eye((cfg["full_image_height"] // cfg["patch_size"]) ** 2)
     diag_attn_mask = tf.cast([diag_attn_mask], dtype=tf.int8)
 
     # Create multiple layers of the Transformer block.

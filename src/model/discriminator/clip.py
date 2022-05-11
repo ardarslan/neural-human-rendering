@@ -10,22 +10,6 @@ def CLIPDiscriminator(cfg):
     image_mean = tf.constant([0.48145466, 0.4578275, 0.40821073])[None, :, None, None]
     image_std = tf.constant([0.26862954, 0.26130258, 0.27577711])[None, :, None, None]
 
-    def center_crop(images):
-        """
-            Input:
-                tf.Tensor
-                Shape: (cfg["batch_size"], cfg["image_height"], cfg["image_width"], num_channels)
-            Output:
-                tf.Tensor
-                Shape: (cfg["batch_size"], 224, 224, num_channels)
-        """
-        return images[
-            :,
-            int(cfg["image_height"] / 2 - 112) : int(cfg["image_height"] / 2 + 112),
-            int(cfg["image_width"] / 2 - 112) : int(cfg["image_width"] / 2 + 112),
-            :,
-        ]
-
     def repeat(images, n_repeats):
         """
         Repeats images in channel dimension.
@@ -57,11 +41,19 @@ def CLIPDiscriminator(cfg):
         return outputs
 
     inp = tf.keras.layers.Input(
-        shape=[cfg["image_height"], cfg["image_width"], cfg["num_in_channels"]],
+        shape=[
+            cfg["cropped_image_height"],
+            cfg["cropped_image_width"],
+            cfg["num_in_channels"],
+        ],
         name="input_image",
     )
     tar = tf.keras.layers.Input(
-        shape=[cfg["image_height"], cfg["image_width"], cfg["num_out_channels"]],
+        shape=[
+            cfg["cropped_image_height"],
+            cfg["cropped_image_width"],
+            cfg["num_out_channels"],
+        ],
         name="target_image",
     )
 
@@ -70,7 +62,7 @@ def CLIPDiscriminator(cfg):
             embed(
                 cfg=cfg,
                 processed_images=process(
-                    images=repeat(center_crop(inp), n_repeats=cfg["num_out_channels"]),
+                    images=repeat(inp, n_repeats=cfg["num_out_channels"]),
                     image_mean=image_mean,
                     image_std=image_std,
                 ),
@@ -78,7 +70,7 @@ def CLIPDiscriminator(cfg):
             embed(
                 cfg=cfg,
                 processed_images=process(
-                    images=center_crop(tar), image_mean=image_mean, image_std=image_std
+                    images=tar, image_mean=image_mean, image_std=image_std
                 ),
             ),
         ]
