@@ -3,6 +3,7 @@ import tensorflow as tf
 print("Num GPUs Available: ", len(tf.config.list_physical_devices("GPU")))
 import os
 import time
+import numpy as np
 from itertools import islice
 
 from utils import (
@@ -94,7 +95,9 @@ def train(
     checkpoint_saver,
     start_iteration,
 ):
-    example_input, example_target = next(iter(val_ds.take(1)))
+    # takes 10 examples
+    val_ds_iter = iter(val_ds)
+    example_inputs, example_targets = next(val_ds_iter)
 
     # takes cfg["num_iterations"] + start_iteration elements from train dataset
     current_train_ds = iter(
@@ -110,7 +113,7 @@ def train(
     ):
         if (iteration) % 1000 == 0:
             generate_intermediate_images(
-                cfg, generator, example_input, example_target, iteration
+                cfg, generator, example_inputs, example_targets, iteration
             )
             print(f"Iteration: {iteration//1000}k")
 
