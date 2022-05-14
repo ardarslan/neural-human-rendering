@@ -25,3 +25,4 @@ dependencies:
     - keras==2.8.0
     - pytorch-fid==0.2.1
     - lpips==0.1.4
+    - tensorflow-addons==0.16.1
