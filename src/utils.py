@@ -58,8 +58,8 @@ def get_argument_parser():
     )
     parser.add_argument("--generator_lr", type=float, default=2e-4)
     parser.add_argument(
-        "--discriminator_lr", type=float, default=1.75e-5
-    )  # 1.5e-5 -> gen won. 2e-5 -> disc won.
+        "--discriminator_lr", type=float, default=1e-4
+    )  # 2e-5 -> gen won.
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument(
@@ -191,7 +191,7 @@ def normalize(image):
     return (tf.cast(image, tf.float32) / 127.5) - 1.0
 
 
-def add_salt_and_pepper_noise(image, prob_salt=0.001, prob_pepper=0.001):
+def add_salt_and_pepper_noise(image, prob_salt=0.0005, prob_pepper=0.0001):
     random_values = tf.random.uniform(shape=(256, 256, 1))
     return tf.where(
         1 - random_values < prob_pepper,
@@ -200,7 +200,7 @@ def add_salt_and_pepper_noise(image, prob_salt=0.001, prob_pepper=0.001):
     )
 
 
-def add_colored_noise(image, prob_colored=0.001):
+def add_colored_noise(image, prob_colored=0.0005):
     random_values_1 = tf.random.uniform(shape=(256, 256, 3))
     random_values_2 = tf.cast(
         tf.random.uniform(shape=(256, 256, 3), dtype=tf.int32, minval=0, maxval=255),
@@ -213,17 +213,23 @@ def load_and_augment_images(input_image_path, real_image_path):
     input_image = tf.io.decode_png(tf.io.read_file(input_image_path))
     real_image = tf.io.decode_png(tf.io.read_file(real_image_path))
     real_image = tf.image.random_brightness(real_image, max_delta=0.10)
-    real_image = tf.image.random_contrast(real_image, lower=0.60, upper=1.40)
-    real_image = tf.image.random_hue(real_image, max_delta=0.05)
+    real_image = tf.image.random_contrast(real_image, lower=0.75, upper=1.25)
+    # real_image = tf.image.random_hue(real_image, max_delta=0.05)
     real_image = tf.image.random_saturation(real_image, lower=0.75, upper=1.25)
-    real_image = add_salt_and_pepper_noise(real_image)
-    real_image = add_colored_noise(real_image)
+    if np.random.random() < 0.5:
+        real_image = add_salt_and_pepper_noise(real_image)
+        real_image = add_colored_noise(real_image)
     stacked_image = tf.concat([real_image, input_image], axis=-1)
     stacked_image = tf.image.random_flip_left_right(stacked_image)
     stacked_image = normalize(stacked_image)
-    stacked_image = tfa.image.rotate(stacked_image, 0.2618, interpolation="BILINEAR")
+    stacked_image = tfa.image.rotate(
+        stacked_image,
+        np.random.uniform(-0.2618, 0.2618),
+        interpolation="BILINEAR",
+        fill_mode="reflect",
+    )
     stacked_image = tf.image.resize(
-        stacked_image, [286, 286], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR
+        stacked_image, [275, 275], method=tf.image.ResizeMethod.BILINEAR
     )
     stacked_image = tf.image.random_crop(stacked_image, size=(256, 256, 4))
     real_image = stacked_image[:, :, :3]
