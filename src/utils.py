@@ -71,6 +71,7 @@ def get_argument_parser():
     parser.add_argument("--full_image_width", type=int, default=256)
     parser.add_argument("--cropped_image_height", type=int, default=224)
     parser.add_argument("--cropped_image_width", type=int, default=224)
+    parser.add_argument("--nr_samples_printed", type=int, default=10)
 
     # VIT
     parser.add_argument("--patch_size", type=int, default=6, help="")
@@ -321,7 +322,7 @@ def generate_intermediate_images(
         predictions = model(example_inputs, training=True)
         # Getting the pixel values in the [0, 255] range to plot.
         file_names = ["input", "ground_truth", "predicted"]
-        for i in range(10):
+        for i in range(cfg["nr_samples_printed"]):
             current_images = [example_inputs[i], example_targets[i], predictions[i]]
             current_file_names = [f"{file_name}_{i}.png" for file_name in file_names]
             for current_file_name, current_image in zip(
