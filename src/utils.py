@@ -58,8 +58,8 @@ def get_argument_parser():
     )
     parser.add_argument("--generator_lr", type=float, default=2e-4)
     parser.add_argument(
-        "--discriminator_lr", type=float, default=1.75e-5
-    )  # 1.5e-5 -> gen won. 2e-5 -> disc won.
+        "--discriminator_lr", type=float, default=2e-5
+    )  # 1.75e-5 -> gen won.
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument(
@@ -191,7 +191,7 @@ def normalize(image):
     return (tf.cast(image, tf.float32) / 127.5) - 1.0
 
 
-def add_salt_and_pepper_noise(image, prob_salt=0.001, prob_pepper=0.001):
+def add_salt_and_pepper_noise(image, prob_salt=0.0002, prob_pepper=0.0001):
     random_values = tf.random.uniform(shape=(256, 256, 1))
     return tf.where(
         1 - random_values < prob_pepper,
@@ -200,7 +200,7 @@ def add_salt_and_pepper_noise(image, prob_salt=0.001, prob_pepper=0.001):
     )
 
 
-def add_colored_noise(image, prob_colored=0.001):
+def add_colored_noise(image, prob_colored=0.0002):
     random_values_1 = tf.random.uniform(shape=(256, 256, 3))
     random_values_2 = tf.cast(
         tf.random.uniform(shape=(256, 256, 3), dtype=tf.int32, minval=0, maxval=255),
