@@ -229,7 +229,7 @@ def load_and_augment_images(input_image_path, real_image_path):
         fill_mode="reflect",
     )
     stacked_image = tf.image.resize(
-        stacked_image, [266, 266], method=tf.image.ResizeMethod.BILINEAR
+        stacked_image, [275, 275], method=tf.image.ResizeMethod.BILINEAR
     )
     stacked_image = tf.image.random_crop(stacked_image, size=(256, 256, 4))
     real_image = stacked_image[:, :, :3]
