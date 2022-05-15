@@ -95,14 +95,16 @@ def train(
     checkpoint_saver,
     start_iteration,
 ):
-    # takes 10 examples
-    val_ds_iter = iter(val_ds)
-    example_inputs, example_targets = next(val_ds_iter)
-
     # takes cfg["num_iterations"] + start_iteration elements from train dataset
     current_train_ds = iter(
         train_ds.repeat().take(cfg["num_iterations"] + start_iteration).enumerate()
     )
+
+    train_ds_iter = iter(train_ds)
+    train_inputs, train_targets = next(train_ds_iter)
+
+    val_ds_iter = iter(val_ds)
+    val_inputs, val_targets = next(val_ds_iter)
 
     # islice is used to skip the first "start_iteration" elements.
     for iteration, (input_image, target) in islice(
@@ -113,7 +115,13 @@ def train(
     ):
         if (iteration) % 1000 == 0:
             generate_intermediate_images(
-                cfg, generator, example_inputs, example_targets, iteration
+                cfg,
+                generator,
+                train_inputs,
+                train_targets,
+                val_inputs,
+                val_targets,
+                iteration,
             )
             print(f"Iteration: {iteration//1000}k")
 

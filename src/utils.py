@@ -6,6 +6,7 @@ import pprint
 import argparse
 import numpy as np
 import tensorflow as tf
+import tensorflow_addons as tfa
 from model.generator.cnn import CNNGenerator
 from model.discriminator.cnn import CNNDiscriminator
 from model.discriminator.vit import VITDiscriminator
@@ -45,7 +46,7 @@ def get_argument_parser():
     parser.add_argument(
         "--experiment_time",
         type=str,
-        default="",
+        # default="",
         help="To load a previous checkpoint. Used both in train.py and test.py",
     )
     parser.add_argument(
@@ -56,7 +57,9 @@ def get_argument_parser():
         help="Weight of l1 loss in generator loss.",
     )
     parser.add_argument("--generator_lr", type=float, default=2e-4)
-    parser.add_argument("--discriminator_lr", type=float, default=2e-4)
+    parser.add_argument(
+        "--discriminator_lr", type=float, default=1.75e-5
+    )  # 1.5e-5 -> gen won. 2e-5 -> disc won.
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument(
@@ -103,6 +106,7 @@ def get_dataset(cfg, split, shuffle):
     input_images_dir = os.path.join(
         cfg["datasets_dir"], cfg["dataset_type"], split, "input"
     )
+
     input_image_paths = sorted(
         [
             os.path.join(input_images_dir, input_image_name)
@@ -110,8 +114,10 @@ def get_dataset(cfg, split, shuffle):
             if input_image_name[-4:] == ".png"
         ]
     )
+
     if shuffle:
         random.shuffle(input_image_paths)
+
     real_image_paths = [
         input_image_path.replace("input", "output")
         for input_image_path in input_image_paths
@@ -124,16 +130,22 @@ def get_dataset(cfg, split, shuffle):
         )
     )
 
-    ds = ds.map(
-        lambda input_image_path, real_image_path: load_images_helper(
-            input_image_path=input_image_path,
-            real_image_path=real_image_path,
-            image_height=cfg["full_image_height"],
-            image_width=cfg["full_image_width"],
-            split=split,
-        ),
-        num_parallel_calls=tf.data.AUTOTUNE,
-    )
+    if split == "train":
+        ds = ds.map(
+            lambda input_image_path, real_image_path: load_and_augment_images(
+                input_image_path=input_image_path,
+                real_image_path=real_image_path,
+            ),
+            num_parallel_calls=tf.data.AUTOTUNE,
+        )
+    else:
+        ds = ds.map(
+            lambda input_image_path, real_image_path: load_images(
+                input_image_path=input_image_path, real_image_path=real_image_path
+            ),
+            num_parallel_calls=tf.data.AUTOTUNE,
+        )
+
     ds = ds.batch(cfg["batch_size"])
     return ds
 
@@ -174,74 +186,56 @@ def get_time():
     return str(int(time.time()))
 
 
-def resize(image, height, width):
-    return tf.image.resize(
-        image, [height, width], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR
-    )
-
-
-def random_crop(input_image, real_image, image_height, image_width):
-    random_start_y = np.random.randint(low=0, high=input_image.shape[0] - image_height)
-    random_start_x = np.random.randint(low=0, high=input_image.shape[1] - image_width)
-
-    cropped_input_image = input_image[
-        random_start_y : random_start_y + image_height,
-        random_start_x : random_start_x + image_width,
-        :,
-    ]
-
-    cropped_real_image = real_image[
-        random_start_y : random_start_y + image_height,
-        random_start_x : random_start_x + image_width,
-        :,
-    ]
-
-    return cropped_input_image, cropped_real_image
-
-
 # Normalizing the images to [-1, 1]
 def normalize(image):
     return (tf.cast(image, tf.float32) / 127.5) - 1.0
 
 
-@tf.function()
-def random_jitter(input_image, real_image, image_height, image_width):
-    input_image = resize(
-        input_image, int(image_height * 1.117), int(image_width * 1.117)
-    )
-    real_image = resize(real_image, int(image_height * 1.117), int(image_width * 1.117))
-
-    input_image, real_image = random_crop(
-        input_image, real_image, image_height, image_width
+def add_salt_and_pepper_noise(image, prob_salt=0.001, prob_pepper=0.001):
+    random_values = tf.random.uniform(shape=(256, 256, 1))
+    return tf.where(
+        1 - random_values < prob_pepper,
+        tf.cast(0, tf.uint8),
+        tf.where(random_values < prob_salt, tf.cast(255, tf.uint8), image),
     )
 
-    if tf.random.uniform(()) > 0.5:
-        # Random mirroring
-        input_image = tf.image.flip_left_right(input_image)
-        real_image = tf.image.flip_left_right(real_image)
 
+def add_colored_noise(image, prob_colored=0.001):
+    random_values_1 = tf.random.uniform(shape=(256, 256, 3))
+    random_values_2 = tf.cast(
+        tf.random.uniform(shape=(256, 256, 3), dtype=tf.int32, minval=0, maxval=255),
+        tf.uint8,
+    )
+    return tf.where(random_values_1 < prob_colored, random_values_2, image)
+
+
+def load_and_augment_images(input_image_path, real_image_path):
+    input_image = tf.io.decode_png(tf.io.read_file(input_image_path))
+    real_image = tf.io.decode_png(tf.io.read_file(real_image_path))
+    real_image = tf.image.random_brightness(real_image, max_delta=0.10)
+    real_image = tf.image.random_contrast(real_image, lower=0.60, upper=1.40)
+    real_image = tf.image.random_hue(real_image, max_delta=0.05)
+    real_image = tf.image.random_saturation(real_image, lower=0.75, upper=1.25)
+    real_image = add_salt_and_pepper_noise(real_image)
+    real_image = add_colored_noise(real_image)
+    stacked_image = tf.concat([real_image, input_image], axis=-1)
+    stacked_image = tf.image.random_flip_left_right(stacked_image)
+    stacked_image = normalize(stacked_image)
+    stacked_image = tfa.image.rotate(stacked_image, 0.2618, interpolation="BILINEAR")
+    stacked_image = tf.image.resize(
+        stacked_image, [286, 286], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR
+    )
+    stacked_image = tf.image.random_crop(stacked_image, size=(256, 256, 4))
+    real_image = stacked_image[:, :, :3]
+    input_image = stacked_image[:, :, 3:]
     return input_image, real_image
 
 
-def load_images_helper(
-    input_image_path, real_image_path, image_height, image_width, split
-):
+def load_images(input_image_path, real_image_path):
     input_image = tf.io.decode_png(tf.io.read_file(input_image_path))
-    real_image = tf.io.decode_png(tf.io.read_file(real_image_path))
-
-    if split == "train":
-        input_image, real_image = random_jitter(
-            input_image, real_image, image_height, image_width
-        )
-    elif split in ["validation", "test"]:
-        input_image = resize(input_image, image_height, image_width)
-        real_image = resize(real_image, image_height, image_width)
-    else:
-        raise Exception(f"Not a valid split {split}.")
-
     input_image = normalize(input_image)
+    real_image = tf.io.decode_png(tf.io.read_file(real_image_path))
     real_image = normalize(real_image)
-
     return input_image, real_image
 
 
@@ -319,29 +313,42 @@ def get_summary_writer(cfg):
 
 
 def generate_intermediate_images(
-    cfg, model, example_inputs, example_targets, iteration
+    cfg, model, train_inputs, train_targets, val_inputs, val_targets, iteration
 ):
-    predictions = model(example_inputs, training=True)
-    # Getting the pixel values in the [0, 255] range to plot.
-    file_names = ["input", "ground_truth", "predicted"]
-    for i in range(10):
-        current_images = [example_inputs[i], example_targets[i], predictions[i]]
-        current_file_names = [f"{file_name}_{i}.png" for file_name in file_names]
-        for current_file_name, current_image in zip(current_file_names, current_images):
-            current_image = np.array(current_image)
-            cv2.imwrite(
-                os.path.join(
-                    get_new_directory(
-                        [
-                            get_checkpoints_dir(cfg),
-                            "intermediate_images",
-                            f"iteration_{str(iteration.numpy()).zfill(7)}",
-                        ]
+    def generate_intermediate_images_helper(
+        cfg, model, example_inputs, example_targets, iteration, split
+    ):
+        predictions = model(example_inputs, training=True)
+        # Getting the pixel values in the [0, 255] range to plot.
+        file_names = ["input", "ground_truth", "predicted"]
+        for i in range(10):
+            current_images = [example_inputs[i], example_targets[i], predictions[i]]
+            current_file_names = [f"{file_name}_{i}.png" for file_name in file_names]
+            for current_file_name, current_image in zip(
+                current_file_names, current_images
+            ):
+                current_image = np.array(current_image)
+                cv2.imwrite(
+                    os.path.join(
+                        get_new_directory(
+                            [
+                                get_checkpoints_dir(cfg),
+                                "intermediate_images",
+                                split,
+                                f"iteration_{str(iteration.numpy()).zfill(7)}",
+                            ]
+                        ),
+                        current_file_name,
                     ),
-                    current_file_name,
-                ),
-                ((current_image[:, :, ::-1] * 0.5 + 0.5) * 255).astype(np.int32),
-            )
+                    ((current_image[:, :, ::-1] * 0.5 + 0.5) * 255).astype(np.int32),
+                )
+
+    generate_intermediate_images_helper(
+        cfg, model, train_inputs, train_targets, iteration, "train"
+    )
+    generate_intermediate_images_helper(
+        cfg, model, val_inputs, val_targets, iteration, "val"
+    )
 
 
 def generate_final_images(cfg, model, test_ds):
