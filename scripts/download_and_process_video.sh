@@ -12,8 +12,8 @@ mkdir $DATASETS_DIR
 VIDEO_DIR=$DATASETS_DIR/face_reconstruction
 mkdir $VIDEO_DIR
 
-wget -O $DATASETS_DIR/face_reconstruction_video.mp4 "https://www.dropbox.com/s/htjtuhgpewgcmlh/videoplayback.mp4?dl=1"
-mv $DATASETS_DIR/face_reconstruction_video.mp4 $VIDEO_DIR;
+#wget -O $DATASETS_DIR/face_reconstruction_video.mp4 "https://www.dropbox.com/s/htjtuhgpewgcmlh/videoplayback.mp4?dl=1"
+#mv $DATASETS_DIR/face_reconstruction_video.mp4 $VIDEO_DIR;
 
 mkdir $VIDEO_DIR/validation; mkdir $VIDEO_DIR/validation/original; mv $VIDEO_DIR/val/original/* $VIDEO_DIR/validation/original;
 
