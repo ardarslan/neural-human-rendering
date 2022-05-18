@@ -68,7 +68,7 @@ def extract_frames_and_edges_for_all_videos(
     video_paths = [
         os.path.join(videos_dir, split, "original", video_name)
         for video_name in sorted(os.listdir(current_videos_dir))
-        if len(video_name) >= 4 and video_name[-4:] == ".avi"
+        if len(video_name) >= 4 and (video_name[-4:] == ".avi" or video_name[-4:] == ".mp4")
     ]
 
     for video_path in video_paths:
