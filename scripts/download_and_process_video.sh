@@ -22,4 +22,4 @@ mkdir $VIDEO_DIR/train/original
 mv $DATASETS_DIR/face_reconstruction_video.mp4 $VIDEO_DIR/train/original
 
 # Process the whole video
-bsub -n 1 -W 24:00 -R "rusage[mem=8192]" -o train.txt python face_data_processor.py --videos_dir $VIDEO_DIR --use_canny_edges $USE_CANNY_EDGES --split train
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" -o train.txt python face_data_processor.py --videos_dir $VIDEO_DIR --use_canny_edges $USE_CANNY_EDGES --split train
