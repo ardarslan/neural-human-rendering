@@ -29,11 +29,21 @@ conda activate virtual_humans
 ```
 
 ## Download and Process Data
+### Faceforensics
 
 ```
 cd scripts
 chmod +x download_and_process_data.sh
 ./download_and_process_data.sh "--DATASETS_DIR=/path/to/data/directory" "--USE_CANNY_EDGES=True"
+```
+### Face_reconstruction
+```
+cd scripts
+chmod +x download_and_process_video.sh
+./download_and_process_video.sh "--DATASETS_DIR=/path/to/data/directory" "--USE_CANNY_EDGES=True"
+# Wait for the script and its corresponding jobs to finish
+chmod +x separate.sh
+./separate.sh "--DATASETS_DIR=/path/to/data/directory" "--TEST_SEP=20000" "--VAL_SEP=100"
 ```
 
 ## Run experiments
