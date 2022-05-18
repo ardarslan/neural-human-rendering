@@ -42,8 +42,8 @@ done
 
 # Separate the data for output
 cd $VIDEO_DIR/train/output
-mv `ls | tail -75000` "${VIDEO_DIR}/test/output"
-mv `ls | tail -100` "${VIDEO_DIR}/validation/output"
+mv `ls | tail -${TEST_SEP}` "${VIDEO_DIR}/test/output"
+mv `ls | tail -${TEST_SEP}` "${VIDEO_DIR}/validation/output"
 
 cd $VIDEO_DIR/test/output
 i=0
