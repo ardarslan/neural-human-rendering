@@ -18,9 +18,9 @@ mv $DATASETS_DIR/FaceForensics_compressed/* $FACE_DIR;
 # rm -rf $DATASETS_DIR/FaceForensics_compressed
 mkdir $FACE_DIR/validation; mkdir $FACE_DIR/validation/original; mv $FACE_DIR/val/original/* $FACE_DIR/validation/original;
 # rm -rf $FACE_DIR/val
-bsub -n 4 -W 24:00 -R "rusage[mem=8192]" python face_data_processor.py --videos_dir $FACE_DIR --use_canny_edges $USE_CANNY_EDGES --split train
-bsub -n 4 -W 24:00 -R "rusage[mem=8192]" python face_data_processor.py --videos_dir $FACE_DIR --use_canny_edges $USE_CANNY_EDGES --split validation
-bsub -n 4 -W 24:00 -R "rusage[mem=8192]" python face_data_processor.py --videos_dir $FACE_DIR --use_canny_edges $USE_CANNY_EDGES --split test
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python face_data_processor.py --videos_dir $FACE_DIR --use_canny_edges $USE_CANNY_EDGES --split train
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python face_data_processor.py --videos_dir $FACE_DIR --use_canny_edges $USE_CANNY_EDGES --split validation
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python face_data_processor.py --videos_dir $FACE_DIR --use_canny_edges $USE_CANNY_EDGES --split test
 
 # wget -O $DATASETS_DIR/body.zip "https://www.dropbox.com/s/coapl05ahqalh09/smplpix_data_test_final.zip?dl=1"
 # unzip $DATASETS_DIR/body.zip -d $DATASETS_DIR/body_smplpix_temp
