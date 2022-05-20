@@ -9,8 +9,6 @@ from utils import (
     get_dataset,
 )
 
-from evaluation_metrics import save_evaluation_scores_of_final_images
-
 if __name__ == "__main__":
     cfg = get_argument_parser().parse_args().__dict__
     set_seeds(cfg)
@@ -23,14 +21,8 @@ if __name__ == "__main__":
     cfg["mlp_head_units"] = [2048, 1024]
     cfg["transformer_units"] = [cfg["projection_dim"] * 2, cfg["projection_dim"]]
 
-    if cfg["dataset_type"] == "face":
-        cfg["num_in_channels"] = 1
-        cfg["num_out_channels"] = 3
-    elif cfg["dataset_type"] == "body_smplpix":
-        cfg["num_in_channels"] = 3
-        cfg["num_out_channels"] = 3
-    else:
-        raise Exception(f"Not a valid dataset_type {dataset_type}.")
+    cfg["num_in_channels"] = 1
+    cfg["num_out_channels"] = 3
 
     generator = get_model(cfg, model_type="generator")
     discriminator = get_model(cfg, model_type="discriminator")

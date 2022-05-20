@@ -4,9 +4,18 @@ from transformers import TFCLIPVisionModel
 
 def CLIPDiscriminator(cfg):
     model = TFCLIPVisionModel.from_pretrained("openai/clip-vit-base-patch32")
-    model.trainable = cfg[
-        "clip_fine_tune"
-    ]  # TODO: Make only the last layer trainable when cfg["clip_fine_tine"] is True.
+    if cfg["clip_fine_tune"]:
+        model.clip.vision_model.embeddings.trainable = False
+        model.clip.vision_model.pre_layernorm.trainable = False
+        model.clip.vision_model.post_layernorm.trainable = True
+        for layer in model.clip.vision_model.encoder.layers:
+            if layer.name == "layers_._11":
+                layer.trainable = True
+            else:
+                layer.trainable = False
+    else:
+        model.trainable = False
+
     image_mean = tf.constant([0.48145466, 0.4578275, 0.40821073])[None, :, None, None]
     image_std = tf.constant([0.26862954, 0.26130258, 0.27577711])[None, :, None, None]
 

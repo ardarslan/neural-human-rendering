@@ -33,7 +33,7 @@ def get_argument_parser():
         required=True,  # fix
         # default="face",  # fix
         help='Dataset type should be "face" or "body_smplpix".',
-        choices=["face", "body_smplpix"],
+        choices=["face", "face_reconstruction"],
     )
     parser.add_argument("--generator_type", type=str, choices=["cnn"], default="cnn")
     parser.add_argument(
@@ -56,8 +56,8 @@ def get_argument_parser():
         default=100,
         help="Weight of l1 loss in generator loss.",
     )
-    parser.add_argument("--generator_lr", type=float, default=1e-4)
-    parser.add_argument("--discriminator_lr", type=float, default=3.25e-4)
+    parser.add_argument("--generator_lr", type=float, required=True)  # 4e-5
+    parser.add_argument("--discriminator_lr", type=float, required=True)  # 1.3e-5
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument(
