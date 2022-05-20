@@ -14,6 +14,7 @@ from utils import (
     get_argument_parser,
     set_seeds,
     get_dataset,
+    get_sample_images,
     get_time,
     get_model,
     get_optimizer,
@@ -100,11 +101,8 @@ def train(
         train_ds.repeat().take(cfg["num_iterations"] + start_iteration).enumerate()
     )
 
-    train_ds_iter = iter(train_ds)
-    train_inputs, train_targets = next(train_ds_iter)
-
-    val_ds_iter = iter(val_ds)
-    val_inputs, val_targets = next(val_ds_iter)
+    train_inputs, train_targets = get_sample_images(cfg, train_ds)
+    val_inputs, val_targets = get_sample_images(cfg, val_ds)
 
     # islice is used to skip the first "start_iteration" elements.
     for iteration, (input_image, target) in islice(

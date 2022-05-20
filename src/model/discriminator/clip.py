@@ -9,7 +9,7 @@ def CLIPDiscriminator(cfg):
         model.clip.vision_model.pre_layernorm.trainable = False
         model.clip.vision_model.post_layernorm.trainable = True
         for layer in model.clip.vision_model.encoder.layers:
-            if layer.name == "layers_._11":
+            if layer.name in ["layers_._11", "layers_._10", "layers_._9", "layers_._8"]:
                 layer.trainable = True
             else:
                 layer.trainable = False

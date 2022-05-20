@@ -59,7 +59,7 @@ def get_argument_parser():
     parser.add_argument("--generator_lr", type=float, required=True)  # 4e-5
     parser.add_argument("--discriminator_lr", type=float, required=True)  # 1.3e-5
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument(
         "--save_checkpoint_every_iter", type=int, default=5000  # fix
     )  # should be consistent if model will be loaded from a previous checkpoint
@@ -315,6 +315,27 @@ def get_summary_writer(cfg):
     log_dir = get_new_directory([checkpoints_dir, "logs"])
     summary_writer = tf.summary.create_file_writer(log_dir)
     return summary_writer
+
+
+def get_sample_images(cfg, ds):
+    num_samples = cfg["nr_samples_printed"]
+    ds_iter = iter(ds)
+    result_inputs = None
+    result_targets = None
+    for current_inputs, current_targets in ds_iter:
+        if result_inputs is None:
+            result_inputs = current_inputs
+            result_targets = current_targets
+        else:
+            result_inputs = tf.concat([result_inputs, current_inputs], axis=0)
+            result_targets = tf.concat([result_targets, current_targets], axis=0)
+
+        result_inputs = result_inputs[:num_samples]
+        result_targets = result_targets[:num_samples]
+
+        if result_inputs.shape[0] == num_samples:
+            break
+    return result_inputs, result_targets
 
 
 def generate_intermediate_images(
