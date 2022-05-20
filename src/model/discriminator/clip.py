@@ -2,19 +2,25 @@ import tensorflow as tf
 from transformers import TFCLIPVisionModel
 
 
-def CLIPDiscriminator(cfg):
+def get_clip_model(cfg):
     model = TFCLIPVisionModel.from_pretrained("openai/clip-vit-base-patch32")
     if cfg["clip_fine_tune"]:
         model.clip.vision_model.embeddings.trainable = False
         model.clip.vision_model.pre_layernorm.trainable = False
         model.clip.vision_model.post_layernorm.trainable = True
         for layer in model.clip.vision_model.encoder.layers:
-            if layer.name in ["layers_._11", "layers_._10", "layers_._9", "layers_._8"]:
+            if layer.name in ["layers_._11"]:
                 layer.trainable = True
             else:
                 layer.trainable = False
     else:
         model.trainable = False
+    return model
+
+
+def CLIPDiscriminator(cfg):
+    model_inp = get_clip_model(cfg)
+    model_tar = get_clip_model(cfg)
 
     image_mean = tf.constant([0.48145466, 0.4578275, 0.40821073])[None, :, None, None]
     image_std = tf.constant([0.26862954, 0.26130258, 0.27577711])[None, :, None, None]
@@ -37,8 +43,16 @@ def CLIPDiscriminator(cfg):
         result = (result - image_mean) / image_std
         return {"pixel_values": result}
 
-    def embed(cfg, processed_images):
+    def embed(cfg, processed_images, image_type):
+        if image_type == "inp":
+            model = model_inp
+        elif image_type == "tar":
+            model = model_tar
+        else:
+            raise Exception(f"Not a valid image_type {image_type}.")
+
         outputs = model(**processed_images)
+
         if cfg["clip_output_type"] == "cls":
             outputs = (
                 outputs.pooler_output
@@ -75,12 +89,14 @@ def CLIPDiscriminator(cfg):
                     image_mean=image_mean,
                     image_std=image_std,
                 ),
+                image_type="inp",
             ),
             embed(
                 cfg=cfg,
                 processed_images=process(
                     images=tar, image_mean=image_mean, image_std=image_std
                 ),
+                image_type="tar",
             ),
         ]
     )

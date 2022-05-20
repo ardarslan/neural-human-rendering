@@ -16,7 +16,6 @@ from utils import (
     get_dataset,
     get_experiment_name,
     get_sample_images,
-    get_time,
     get_model,
     get_optimizer,
     get_summary_writer,
@@ -156,8 +155,7 @@ if __name__ == "__main__":
         cfg["experiment_name"] = get_experiment_name()
         retraining = False
     elif (
-        isinstance(cfg["experiment_name"], str)
-        and len(cfg["experiment_name"]) == 43
+        isinstance(cfg["experiment_name"], str) and len(cfg["experiment_name"]) == 43
     ):  # retraining
         retraining = True
     else:
