@@ -4,17 +4,17 @@ from transformers import TFCLIPVisionModel
 
 def get_clip_model(cfg):
     model = TFCLIPVisionModel.from_pretrained("openai/clip-vit-base-patch32")
-    if cfg["clip_fine_tune"]:
-        model.clip.vision_model.embeddings.trainable = False
-        model.clip.vision_model.pre_layernorm.trainable = False
-        model.clip.vision_model.post_layernorm.trainable = True
-        for layer in model.clip.vision_model.encoder.layers:
-            if layer.name in ["layers_._11"]:
-                layer.trainable = True
-            else:
-                layer.trainable = False
-    else:
-        model.trainable = False
+    # if cfg["clip_fine_tune"]:
+    #     model.clip.vision_model.embeddings.trainable = False
+    #     model.clip.vision_model.pre_layernorm.trainable = False
+    #     model.clip.vision_model.post_layernorm.trainable = True  # True
+    #     for layer in model.clip.vision_model.encoder.layers:
+    #         if layer.name in ["layers_._11"]:
+    #             layer.trainable = True  # True
+    #         else:
+    #             layer.trainable = False
+    # else:
+    #     model.trainable = False
     return model
 
 
@@ -100,10 +100,6 @@ def CLIPDiscriminator(cfg):
             ),
         ]
     )
-    outputs = tf.keras.layers.Dense(64, activation="leaky_relu")(outputs)
-    outputs = tf.keras.layers.BatchNormalization()(outputs)
-    outputs = tf.keras.layers.Dense(64, activation="leaky_relu")(outputs) + outputs
-    outputs = tf.keras.layers.BatchNormalization()(outputs)
-    outputs = tf.keras.layers.Dense(1, activation="linear")(outputs)
+    outputs = tf.keras.layers.Dense(1)(outputs)
 
     return tf.keras.Model(inputs=[inp, tar], outputs=outputs)
