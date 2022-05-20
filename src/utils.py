@@ -5,6 +5,7 @@ import random
 import pprint
 import argparse
 import numpy as np
+from uuid import uuid4
 import tensorflow as tf
 import tensorflow_addons as tfa
 from model.generator.cnn import CNNGenerator
@@ -44,7 +45,7 @@ def get_argument_parser():
         required=True,  # fix
     )
     parser.add_argument(
-        "--experiment_time",
+        "--experiment_name",
         type=str,
         # default="",
         help="To load a previous checkpoint. Used both in train.py and test.py",
@@ -181,8 +182,8 @@ def get_optimizer(cfg, optimizer_type):
         raise Exception(f"Not a valid optimizer_type {optimizer_type}.")
 
 
-def get_time():
-    return str(int(time.time()))
+def get_experiment_name():
+    return f"{int(time.time())}_{uuid4().hex}"
 
 
 # Normalizing the images to [-1, 1]
@@ -271,7 +272,7 @@ def get_new_directory(folder_names):
 
 
 def get_checkpoints_dir(cfg):
-    return get_new_directory([cfg["checkpoints_dir"], cfg["experiment_time"]])
+    return get_new_directory([cfg["checkpoints_dir"], cfg["experiment_name"]])
 
 
 def get_checkpoint_saver(

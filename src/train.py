@@ -14,6 +14,7 @@ from utils import (
     get_argument_parser,
     set_seeds,
     get_dataset,
+    get_experiment_name,
     get_sample_images,
     get_time,
     get_model,
@@ -151,17 +152,16 @@ if __name__ == "__main__":
     cfg["num_in_channels"] = 1
     cfg["num_out_channels"] = 3
 
-    if cfg["experiment_time"] == "" or cfg["experiment_time"] is None:
-        cfg["experiment_time"] = get_time()
+    if cfg["experiment_name"] == "" or cfg["experiment_name"] is None:
+        cfg["experiment_name"] = get_experiment_name()
         retraining = False
     elif (
-        cfg["experiment_time"].isdigit()
-        and isinstance(cfg["experiment_time"], str)
-        and len(cfg["experiment_time"]) == 10
+        isinstance(cfg["experiment_name"], str)
+        and len(cfg["experiment_name"]) == 43
     ):  # retraining
         retraining = True
     else:
-        raise Exception(f"Not a valid experiment_time {experiment_time}.")
+        raise Exception(f"Not a valid experiment_name {experiment_name}.")
 
     save_cfg(cfg)
 
