@@ -84,7 +84,6 @@ def CLIPDiscriminator(cfg):
             ),
         ]
     )
-    outputs = tf.keras.layers.BatchNormalization()(outputs)
     outputs = tf.keras.layers.Dense(64, activation="leaky_relu")(outputs)
     outputs = tf.keras.layers.BatchNormalization()(outputs)
     outputs = tf.keras.layers.Dense(64, activation="leaky_relu")(outputs) + outputs
