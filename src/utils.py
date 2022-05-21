@@ -60,7 +60,7 @@ def get_argument_parser():
     parser.add_argument("--generator_lr", type=float, required=True)  # 4e-5
     parser.add_argument("--discriminator_lr", type=float, required=True)  # 1.3e-5
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument(
         "--save_checkpoint_every_iter", type=int, default=5000  # fix
     )  # should be consistent if model will be loaded from a previous checkpoint
