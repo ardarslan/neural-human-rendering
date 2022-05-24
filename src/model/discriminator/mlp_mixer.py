@@ -30,7 +30,7 @@ class Patches(layers.Layer):
         return patches
 
 
-def MLPMixerDiscrimator(cfg, positional_encoding=False):
+def MLPMixerDiscriminator(cfg, positional_encoding=False):
     num_patches = (cfg['full_image_height'] // cfg['mlp_patch_size']) ** 2
     mlpmixer_blocks = keras.Sequential(
         [MLPMixerLayer(num_patches, cfg['mlp_embedding_dim'], cfg['mlp_dropout_rate'], cfg)

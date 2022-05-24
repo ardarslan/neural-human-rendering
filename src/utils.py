@@ -11,7 +11,7 @@ from model.generator.cnn import CNNGenerator
 from model.discriminator.cnn import CNNDiscriminator
 from model.discriminator.vit import VITDiscriminator
 from model.discriminator.clip import CLIPDiscriminator
-from model.discriminator.mlp_mixer import MLPMixerDiscrimator
+from model.discriminator.mlp_mixer import MLPMixerDiscriminator
 
 
 def get_argument_parser():
@@ -171,7 +171,7 @@ def get_model(cfg, model_type):
         elif cfg["discriminator_type"] == "clip":
             ModelClass = CLIPDiscriminator
         elif cfg["discriminator_type"] == "mlp-mixer":
-            ModelClass = MLPMixerDiscrimator
+            ModelClass = MLPMixerDiscriminator
         else:
             raise Exception(f"Not a valid discriminator_type {discriminator_type}.")
     else:
