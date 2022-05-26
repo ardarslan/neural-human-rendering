@@ -162,7 +162,7 @@ def get_lpips(cfg, lpips_type):
 def save_evaluation_scores_of_final_images(cfg):
     if cfg["dataset_type"] == "face":
         scores = {"fid": get_fid(cfg)}
-    elif cfg["dataset_type"] == "body_smplpix":
+    elif cfg["dataset_type"] == "body_smplpix" or cfg["dataset_type"] == "face_reconstruction":
         scores = {
             "ssim": get_ssim(cfg),
             "lpips_alex": get_lpips(cfg, "alex"),

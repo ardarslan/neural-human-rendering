@@ -69,6 +69,12 @@ bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python train.py --datas
 bsub -n 2 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python train.py --datasets_dir /path/to/data/directory --dataset_type face --discriminator_type vit --vanilla --projection_dim 32 --num_heads 2 --num_transformer_layers 3 --checkpoints_dir /path/to/checkpoints/directory --generator_lr GEN_LR --discriminator_lr DISC_LR
 ```
 
+### Train MLP-Mixer Pix2Pix
+
+```
+bsub -n 2 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python train.py --discriminator_type mlp-mixer --batch_size 4 --dataset_type DATASET_TYPE --datasets_dir /path/to/data/directory --checkpoints_dir /path/to/checkpoints/directory --generator_lr GEN_LR --discriminator_lr DISC_LR
+```
+
 ### Train CLIP Pix2Pix
 
 ```
@@ -87,6 +93,12 @@ bsub -n 2 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python test.py --datase
 
 ```
 bsub -n 2 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python test.py --datasets_dir /path/to/data/directory --dataset_type DATASET_TYPE --discriminator_type vit --vanilla --projection_dim 32 --num_heads 2 --num_transformer_layers 3 --checkpoints_dir /path/to/checkpoints/directory --experiment_time TIMESTAMP_OF_TRAIN_JOB
+```
+
+### Test MLP-Mixer Pix2Pix
+
+```
+bsub -n 2 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python test.py --datasets_dir /path/to/data/directory --dataset_type DATASET_TYPE --discriminator_type mlp-mixer --checkpoints_dir /path/to/checkpoints/directory --experiment_time TIMESTAMP_OF_TRAIN_JOB
 ```
 
 ### Test CLIP Pix2Pix
