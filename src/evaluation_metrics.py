@@ -110,6 +110,13 @@ def get_dataset_paths(cfg):
     return gen_image_paths, gt_image_paths
 
 
+def center_crop(image, crop_size):
+    y, x = image.shape
+    startx = x//2 - (cropx//2)
+    starty = y//2 - (cropy//2)
+    return image[starty:starty + crop_size, startx:startx + crop_size]
+
+
 def get_ssim(cfg):
     gen_image_paths, gt_image_paths = get_dataset_paths(cfg)
 
@@ -117,8 +124,8 @@ def get_ssim(cfg):
     ssim_count = 0
 
     for gen_image_path, gt_image_path in zip(gen_image_paths, gt_image_paths):
-        gen_image = cv2.imread(gen_image_path)
-        gt_image = cv2.imread(gt_image_path)
+        gen_image = center_crop(cv2.imread(gen_image_path), cfg["cropped_image_height"])
+        gt_image = center_crop(cv2.imread(gt_image_path), cfg["cropped_image_height"])
         ssim_sum += ssim_multiple_channels(gen_image, gt_image)
         ssim_count += 1
 
