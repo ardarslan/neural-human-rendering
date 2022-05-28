@@ -148,7 +148,7 @@ def get_lpips(cfg, lpips_type):
         raise Exception(f"Not a valid lpips_function {lpips_function}.")
 
     def read_and_process_image(image_path):
-        image = cv2.imread(image_path)[:, :, [2, 1, 0]]  # (H, W, RGB)
+        image = center_crop(cv2.imread(image_path), cfg["cropped_image_height"])[:, :, [2, 1, 0]]  # (H, W, RGB)
         image = np.transpose(image, (2, 0, 1))  # (RGB, H, W)
         image = (image / 255.0) * 2.0 - 1.0  # (RGB, H, W), between [-1, 1]
         image = (
