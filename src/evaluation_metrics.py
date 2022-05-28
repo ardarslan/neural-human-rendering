@@ -111,7 +111,7 @@ def get_dataset_paths(cfg):
 
 
 def center_crop(image, crop_size):
-    y, x = image.shape
+    y, x, _ = image.shape
     startx = x//2 - (crop_size//2)
     starty = y//2 - (crop_size//2)
     return image[starty:starty + crop_size, startx:startx + crop_size]
