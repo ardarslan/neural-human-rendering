@@ -12,6 +12,7 @@ from model.generator.cnn import CNNGenerator
 from model.discriminator.cnn import CNNDiscriminator
 from model.discriminator.vit import VITDiscriminator
 from model.discriminator.clip import CLIPDiscriminator
+from model.discriminator.mlp_mixer import MLPMixerDiscriminator
 
 
 def get_argument_parser():
@@ -33,7 +34,7 @@ def get_argument_parser():
         type=str,
         required=True,  # fix
         # default="face",  # fix
-        help='Dataset type should be "face" or "body_smplpix".',
+        help='Dataset type should be "face" or "face_reconstruction".',
         choices=["face", "face_reconstruction"],
     )
     parser.add_argument("--generator_type", type=str, choices=["cnn"], default="cnn")
@@ -81,6 +82,13 @@ def get_argument_parser():
     parser.add_argument("--num_heads", type=int, default=4, help="")
     parser.add_argument("--num_transformer_layers", type=int, default=8, help="")
     parser.add_argument("--num_classes", type=int, default=2, help="")
+
+    # MLP
+    parser.add_argument("--mlp_patch_size", type=int, default=8, help="")
+    parser.add_argument("--mlp_embedding_dim", type=int, default=256, help="")
+    parser.add_argument("--mlp_dropout_rate", type=float, default=0.2, help="")
+    parser.add_argument("--mlp_weight_decay", type=float, default=0.0001, help="")
+    parser.add_argument("--mlp_num_blocks", type=int, default=4, help="")
 
     # CLIP
     parser.add_argument("--clip_fine_tune", action="store_true")
@@ -165,7 +173,7 @@ def get_model(cfg, model_type):
         elif cfg["discriminator_type"] == "clip":
             ModelClass = CLIPDiscriminator
         elif cfg["discriminator_type"] == "mlp-mixer":
-            raise NotImplementedError()
+            ModelClass = MLPMixerDiscriminator
         else:
             raise Exception(f"Not a valid discriminator_type {discriminator_type}.")
     else:

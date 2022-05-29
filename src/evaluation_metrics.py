@@ -110,6 +110,13 @@ def get_dataset_paths(cfg):
     return gen_image_paths, gt_image_paths
 
 
+def center_crop(image, crop_size):
+    y, x, _ = image.shape
+    startx = x//2 - (crop_size//2)
+    starty = y//2 - (crop_size//2)
+    return image[starty:starty + crop_size, startx:startx + crop_size]
+
+
 def get_ssim(cfg):
     gen_image_paths, gt_image_paths = get_dataset_paths(cfg)
 
@@ -117,8 +124,8 @@ def get_ssim(cfg):
     ssim_count = 0
 
     for gen_image_path, gt_image_path in zip(gen_image_paths, gt_image_paths):
-        gen_image = cv2.imread(gen_image_path)
-        gt_image = cv2.imread(gt_image_path)
+        gen_image = center_crop(cv2.imread(gen_image_path), cfg["cropped_image_height"])
+        gt_image = center_crop(cv2.imread(gt_image_path), cfg["cropped_image_height"])
         ssim_sum += ssim_multiple_channels(gen_image, gt_image)
         ssim_count += 1
 
@@ -141,7 +148,7 @@ def get_lpips(cfg, lpips_type):
         raise Exception(f"Not a valid lpips_function {lpips_function}.")
 
     def read_and_process_image(image_path):
-        image = cv2.imread(image_path)[:, :, [2, 1, 0]]  # (H, W, RGB)
+        image = center_crop(cv2.imread(image_path), cfg["cropped_image_height"])[:, :, [2, 1, 0]]  # (H, W, RGB)
         image = np.transpose(image, (2, 0, 1))  # (RGB, H, W)
         image = (image / 255.0) * 2.0 - 1.0  # (RGB, H, W), between [-1, 1]
         image = (
@@ -162,7 +169,7 @@ def get_lpips(cfg, lpips_type):
 def save_evaluation_scores_of_final_images(cfg):
     if cfg["dataset_type"] == "face":
         scores = {"fid": get_fid(cfg)}
-    elif cfg["dataset_type"] == "body_smplpix":
+    elif cfg["dataset_type"] == "body_smplpix" or cfg["dataset_type"] == "face_reconstruction":
         scores = {
             "ssim": get_ssim(cfg),
             "lpips_alex": get_lpips(cfg, "alex"),
@@ -183,9 +190,7 @@ if __name__ == "__main__":
     cfg = get_argument_parser().parse_args().__dict__
     set_seeds(cfg)
     assert (
-        cfg["experiment_time"].isdigit()
-        and isinstance(cfg["experiment_time"], str)
-        and len(cfg["experiment_time"]) == 10
-    ), "experiment_time should be a string of length 10."
+        isinstance(cfg["experiment_name"], str) and len(cfg["experiment_name"]) == 43
+    ), "experiment_name should be a string of length 43."
 
     save_evaluation_scores_of_final_images(cfg)
