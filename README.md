@@ -110,5 +110,5 @@ bsub -n 2 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python test.py --datase
 ### Evaluate results (for any model)
 
 ```
-bsub -n 2 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python evaluation_metrics.py --datasets_dir /path/to/data/directory --dataset_type DATASET_TYPE --checkpoints_dir /path/to/checkpoints/directory --experiment_name EXPERIMENT_FOLDER_NAME_OF_TRAIN_JOB --fid_device cuda:0
+bsub -n 2 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python evaluation_metrics.py --discriminator_type DISCRIMINATOR_TYPE --datasets_dir /path/to/data/directory --dataset_type DATASET_TYPE --checkpoints_dir /path/to/checkpoints/directory --experiment_name EXPERIMENT_FOLDER_NAME_OF_TRAIN_JOB --fid_device cuda:0
 ```
