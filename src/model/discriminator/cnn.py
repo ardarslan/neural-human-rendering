@@ -22,9 +22,7 @@ def CNNDiscriminator(cfg):
         name="target_image",
     )
 
-    x = tf.keras.layers.concatenate(
-        [inp, tar]
-    )
+    x = tf.keras.layers.concatenate([inp, tar])
 
     down1 = downsample(64, 4, False)(x)
     down2 = downsample(128, 4)(down1)
@@ -46,8 +44,16 @@ def CNNDiscriminator(cfg):
     batchnorm2 = tf.keras.layers.BatchNormalization()(conv2)
     leaky_relu2 = tf.keras.layers.LeakyReLU()(batchnorm2)
 
+    # layer 3
     zero_pad3 = tf.keras.layers.ZeroPadding2D()(leaky_relu2)
+    conv3 = tf.keras.layers.Conv2D(
+        512, 4, strides=1, kernel_initializer=initializer, use_bias=False
+    )(zero_pad3)
+    batchnorm3 = tf.keras.layers.BatchNormalization()(conv3)
+    leaky_relu3 = tf.keras.layers.LeakyReLU()(batchnorm3)
+
+    zero_pad4 = tf.keras.layers.ZeroPadding2D()(leaky_relu3)
     last = tf.keras.layers.Conv2D(1, 4, strides=1, kernel_initializer=initializer)(
-        zero_pad3
+        zero_pad4
     )
     return tf.keras.Model(inputs=[inp, tar], outputs=last)

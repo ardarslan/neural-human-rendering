@@ -112,9 +112,9 @@ def get_dataset_paths(cfg):
 
 def center_crop(image, crop_size):
     y, x, _ = image.shape
-    startx = x//2 - (crop_size//2)
-    starty = y//2 - (crop_size//2)
-    return image[starty:starty + crop_size, startx:startx + crop_size]
+    startx = x // 2 - (crop_size // 2)
+    starty = y // 2 - (crop_size // 2)
+    return image[starty : starty + crop_size, startx : startx + crop_size]
 
 
 def get_ssim(cfg):
@@ -148,7 +148,9 @@ def get_lpips(cfg, lpips_type):
         raise Exception(f"Not a valid lpips_function {lpips_function}.")
 
     def read_and_process_image(image_path):
-        image = center_crop(cv2.imread(image_path), cfg["cropped_image_height"])[:, :, [2, 1, 0]]  # (H, W, RGB)
+        image = center_crop(cv2.imread(image_path), cfg["cropped_image_height"])[
+            :, :, [2, 1, 0]
+        ]  # (H, W, RGB)
         image = np.transpose(image, (2, 0, 1))  # (RGB, H, W)
         image = (image / 255.0) * 2.0 - 1.0  # (RGB, H, W), between [-1, 1]
         image = (
@@ -169,7 +171,10 @@ def get_lpips(cfg, lpips_type):
 def save_evaluation_scores_of_final_images(cfg):
     if cfg["dataset_type"] == "face":
         scores = {"fid": get_fid(cfg)}
-    elif cfg["dataset_type"] == "body_smplpix" or cfg["dataset_type"] == "face_reconstruction":
+    elif (
+        cfg["dataset_type"] == "body_smplpix"
+        or cfg["dataset_type"] == "face_reconstruction"
+    ):
         scores = {
             "ssim": get_ssim(cfg),
             "lpips_alex": get_lpips(cfg, "alex"),
@@ -189,8 +194,8 @@ def save_evaluation_scores_of_final_images(cfg):
 if __name__ == "__main__":
     cfg = get_argument_parser().parse_args().__dict__
     set_seeds(cfg)
-    assert (
-        isinstance(cfg["experiment_name"], str) and len(cfg["experiment_name"]) == 43
-    ), "experiment_name should be a string of length 43."
+    # assert (
+    #     isinstance(cfg["experiment_name"], str) and len(cfg["experiment_name"]) == 43
+    # ), "experiment_name should be a string of length 43."
 
     save_evaluation_scores_of_final_images(cfg)

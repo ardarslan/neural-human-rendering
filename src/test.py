@@ -12,9 +12,9 @@ from utils import (
 if __name__ == "__main__":
     cfg = get_argument_parser().parse_args().__dict__
     set_seeds(cfg)
-    assert (
-        isinstance(cfg["experiment_name"], str) and len(cfg["experiment_name"]) == 43
-    ), "experiment_name should be a string of length 43."
+    # assert (
+    #     isinstance(cfg["experiment_name"], str) and len(cfg["experiment_name"]) == 43
+    # ), "experiment_name should be a string of length 43."
 
     cfg["mlp_head_units"] = [2048, 1024]
     cfg["transformer_units"] = [cfg["projection_dim"] * 2, cfg["projection_dim"]]
