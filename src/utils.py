@@ -59,7 +59,7 @@ def get_argument_parser():
         help="Weight of l1 loss in generator loss.",
     )
     parser.add_argument("--generator_lr", type=float, default=0.0001)
-    parser.add_argument("--discriminator_lr", type=float, default=0.00001)
+    parser.add_argument("--discriminator_lr", type=float, default=0.0001)
     # parser.add_argument("--dropout_rate", type=float, required=True)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--batch_size", type=int, default=16)
