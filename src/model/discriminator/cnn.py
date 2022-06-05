@@ -26,12 +26,12 @@ def CNNDiscriminator(cfg):
 
     down1 = downsample(64, 4, False)(x)
     down2 = downsample(128, 4)(down1)
-    down3 = downsample(256, 4)(down2)
+    down3 = downsample(128, 4)(down2)
 
     # layer 1
     zero_pad1 = tf.keras.layers.ZeroPadding2D()(down3)
     conv1 = tf.keras.layers.Conv2D(
-        256, 4, strides=1, kernel_initializer=initializer, use_bias=False
+        128, 4, strides=1, kernel_initializer=initializer, use_bias=False
     )(zero_pad1)
     batchnorm1 = tf.keras.layers.BatchNormalization()(conv1)
     leaky_relu1 = tf.keras.layers.LeakyReLU()(batchnorm1)
@@ -39,7 +39,7 @@ def CNNDiscriminator(cfg):
     # layer 2
     zero_pad2 = tf.keras.layers.ZeroPadding2D()(leaky_relu1)
     conv2 = tf.keras.layers.Conv2D(
-        256, 4, strides=1, kernel_initializer=initializer, use_bias=False
+        128, 4, strides=1, kernel_initializer=initializer, use_bias=False
     )(zero_pad2)
     batchnorm2 = tf.keras.layers.BatchNormalization()(conv2)
     leaky_relu2 = tf.keras.layers.LeakyReLU()(batchnorm2)
@@ -47,7 +47,7 @@ def CNNDiscriminator(cfg):
     # layer 3
     zero_pad3 = tf.keras.layers.ZeroPadding2D()(leaky_relu2)
     conv3 = tf.keras.layers.Conv2D(
-        256, 4, strides=1, kernel_initializer=initializer, use_bias=False
+        128, 4, strides=1, kernel_initializer=initializer, use_bias=False
     )(zero_pad3)
     batchnorm3 = tf.keras.layers.BatchNormalization()(conv3)
     leaky_relu3 = tf.keras.layers.LeakyReLU()(batchnorm3)
