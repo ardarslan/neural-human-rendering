@@ -45,9 +45,17 @@ def CNNDiscriminator(cfg):
     )(zero_pad2)
     batchnorm2 = tf.keras.layers.BatchNormalization()(conv2)
     leaky_relu2 = tf.keras.layers.LeakyReLU()(batchnorm2)
-
+    
+    # layer 3
     zero_pad3 = tf.keras.layers.ZeroPadding2D()(leaky_relu2)
+    conv3 = tf.keras.layers.Conv2D(
+        512, 4, strides=1, kernel_initializer=initializer, use_bias=False
+    )(zero_pad3)
+    batchnorm3 = tf.keras.layers.BatchNormalization()(conv3)
+    leaky_relu3 = tf.keras.layers.LeakyReLU()(batchnorm3)
+
+    zero_pad4 = tf.keras.layers.ZeroPadding2D()(leaky_relu3)
     last = tf.keras.layers.Conv2D(1, 4, strides=1, kernel_initializer=initializer)(
-        zero_pad3
+        zero_pad4
     )
     return tf.keras.Model(inputs=[inp, tar], outputs=last)
