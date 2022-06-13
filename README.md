@@ -59,8 +59,14 @@ If you want to keep training using a previous checkpoint use --experiment_time T
 
 ### Train Original Pix2Pix
 
+For novel face synthesis:
 ```
-bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python train.py --datasets_dir /cluster/scratch/aarslan/virtual_humans_data --dataset_type face --discriminator_type cnn --checkpoints_dir /cluster/scratch/aarslan/virtual_humans_checkpoints
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python train.py --datasets_dir /path/to/data/directory --dataset_type face --discriminator_type cnn --checkpoints_dir /path/to/checkpoints/directory --batch_size 16
+```
+
+For face reconstruction:
+```
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python train.py --datasets_dir /path/to/data/directory --dataset_type face_reconstruction --discriminator_type cnn --checkpoints_dir /path/to/checkpoints/directory --batch_size 32
 ```
 
 ### Train VIT Pix2Pix
