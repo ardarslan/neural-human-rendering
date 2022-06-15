@@ -61,7 +61,7 @@ If you want to keep training using a previous checkpoint use --experiment_time T
 
 For novel face synthesis:
 ```
-bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python train.py --datasets_dir /path/to/data/directory --dataset_type face --discriminator_type cnn --checkpoints_dir /path/to/checkpoints/directory --batch_size 16
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python train.py --datasets_dir /path/to/data/directory --dataset_type face --discriminator_type cnn --checkpoints_dir /path/to/checkpoints/directory --batch_size 32
 ```
 
 For face reconstruction:
@@ -72,13 +72,13 @@ bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>
 ### Train VIT Pix2Pix
 
 ```
-bsub -n 2 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python train.py --datasets_dir /path/to/data/directory --dataset_type face --discriminator_type vit --vanilla --projection_dim 32 --num_heads 2 --num_transformer_layers 3 --checkpoints_dir /path/to/checkpoints/directory --generator_lr GEN_LR --discriminator_lr DISC_LR --batch_size 4
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python train.py --datasets_dir /path/to/data/directory --dataset_type face --discriminator_type vit --vanilla --projection_dim 32 --num_heads 2 --num_transformer_layers 3 --checkpoints_dir /path/to/checkpoints/directory --generator_lr GEN_LR --discriminator_lr DISC_LR --batch_size 4
 ```
 
 ### Train MLP-Mixer Pix2Pix
 
 ```
-bsub -n 2 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python train.py --discriminator_type mlp-mixer --batch_size 4 --dataset_type DATASET_TYPE --datasets_dir /path/to/data/directory --checkpoints_dir /path/to/checkpoints/directory --generator_lr GEN_LR --discriminator_lr DISC_LR --batch_size 16
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python train.py --discriminator_type mlp-mixer --batch_size 4 --dataset_type DATASET_TYPE --datasets_dir /path/to/data/directory --checkpoints_dir /path/to/checkpoints/directory --generator_lr GEN_LR --discriminator_lr DISC_LR --batch_size 16
 ```
 
 
@@ -86,23 +86,23 @@ bsub -n 2 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python train.py --discr
 ### Test Original Pix2Pix
 
 ```
-bsub -n 2 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python test.py --datasets_dir /path/to/data/directory --dataset_type DATASET_TYPE --discriminator_type cnn --checkpoints_dir /path/to/checkpoints/directory --experiment_name EXPERIMENT_FOLDER_NAME_OF_TRAIN_JOB
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python test.py --datasets_dir /path/to/data/directory --dataset_type DATASET_TYPE --discriminator_type cnn --checkpoints_dir /path/to/checkpoints/directory --experiment_name EXPERIMENT_FOLDER_NAME_OF_TRAIN_JOB
 ```
 
 ### Test VIT Pix2Pix
 
 ```
-bsub -n 2 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python test.py --datasets_dir /path/to/data/directory --dataset_type DATASET_TYPE --discriminator_type vit --vanilla --projection_dim 32 --num_heads 2 --num_transformer_layers 3 --checkpoints_dir /path/to/checkpoints/directory --experiment_name EXPERIMENT_FOLDER_NAME_OF_TRAIN_JOB
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python test.py --datasets_dir /path/to/data/directory --dataset_type DATASET_TYPE --discriminator_type vit --vanilla --projection_dim 32 --num_heads 2 --num_transformer_layers 3 --checkpoints_dir /path/to/checkpoints/directory --experiment_name EXPERIMENT_FOLDER_NAME_OF_TRAIN_JOB
 ```
 
 ### Test MLP-Mixer Pix2Pix
 
 ```
-bsub -n 2 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python test.py --datasets_dir /path/to/data/directory --dataset_type DATASET_TYPE --discriminator_type mlp-mixer --checkpoints_dir /path/to/checkpoints/directory --experiment_name EXPERIMENT_FOLDER_NAME_OF_TRAIN_JOB
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python test.py --datasets_dir /path/to/data/directory --dataset_type DATASET_TYPE --discriminator_type mlp-mixer --checkpoints_dir /path/to/checkpoints/directory --experiment_name EXPERIMENT_FOLDER_NAME_OF_TRAIN_JOB
 ```
 
 ### Evaluate results (for any model)
 
 ```
-bsub -n 2 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" python evaluation_metrics.py --discriminator_type DISCRIMINATOR_TYPE --datasets_dir /path/to/data/directory --dataset_type DATASET_TYPE --checkpoints_dir /path/to/checkpoints/directory --experiment_name EXPERIMENT_FOLDER_NAME_OF_TRAIN_JOB --fid_device cuda:0
+bsub -n 4 -W 24:00 -R "rusage[mem=8192, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" python evaluation_metrics.py --discriminator_type DISCRIMINATOR_TYPE --datasets_dir /path/to/data/directory --dataset_type DATASET_TYPE --checkpoints_dir /path/to/checkpoints/directory --experiment_name EXPERIMENT_FOLDER_NAME_OF_TRAIN_JOB --fid_device cuda:0
 ```
